@@ -11,3 +11,40 @@ repository = "https://github.com/valff/blink-stm32l4"
 
 [dependencies]
 clippy = {version = "*", optional = true}
+
+[dependencies.drone]
+version = "0.1"
+features = ["stm32l4"]
+
+[dev-dependencies.drone-test]
+version = "0.1"
+
+[lib]
+
+[[bin]]
+name = "blink-stm32l4"
+test = false
+doc = false
+
+[profile.dev]
+opt-level = 3
+lto = true
+panic = "abort"
+
+[profile.release]
+opt-level = 3
+lto = true
+panic = "abort"
+
+[profile.test]
+panic = "abort"
+
+[profile.bench]
+opt-level = 3
+lto = true
+panic = "abort"
+
+[profile.doc]
+opt-level = 3
+lto = true
+panic = "abort"
