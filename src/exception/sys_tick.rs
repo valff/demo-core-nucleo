@@ -9,20 +9,24 @@ const WIDTH: u32 = 5;
 const SPEED: u32 = 1;
 
 static mut SYS_TICK: SysTick = SysTick {
-  gpio_cbsrr: Reg::new(),
+  gpiob_cbsrr: Reg::new(),
+  gpioc_cbsrr: Reg::new(),
   counter: ((0b1 << (WIDTH * 2)) << SPEED) - 1,
 };
 
 /// The exception routine data.
 pub struct SysTick {
-  gpio_cbsrr: Sreg<gpio::Bsrr<gpio::port::B>>,
+  gpiob_cbsrr: Sreg<gpio::Bsrr<gpio::port::B>>,
+  gpioc_cbsrr: Sreg<gpio::Bsrr<gpio::port::C>>,
   counter: u32,
 }
 
 /// The exception configuration data.
 pub struct SysTickConfig {
   /// Port B bit set/reset register.
-  pub gpio_cbsrr: Sreg<gpio::Bsrr<gpio::port::B>>,
+  pub gpiob_cbsrr: Sreg<gpio::Bsrr<gpio::port::B>>,
+  /// Port C bit set/reset register.
+  pub gpioc_cbsrr: Sreg<gpio::Bsrr<gpio::port::C>>,
 }
 
 /// The exception handler.
@@ -35,17 +39,25 @@ impl Exception for SysTick {
 
   unsafe fn config(config: SysTickConfig) {
     let data = &mut SYS_TICK;
-    data.gpio_cbsrr = config.gpio_cbsrr;
+    data.gpiob_cbsrr = config.gpiob_cbsrr;
+    data.gpioc_cbsrr = config.gpioc_cbsrr;
   }
 
   fn run(&mut self) {
-    let gpio_cbsrr = self.gpio_cbsrr.ptr();
+    let gpiob_cbsrr = self.gpiob_cbsrr.ptr();
+    let gpioc_cbsrr = self.gpioc_cbsrr.ptr();
     let lightness = self.counter >> WIDTH >> SPEED;
     let position = self.counter & ((0b1 << WIDTH) - 1);
     if lightness == position {
-      gpio_cbsrr.write(|reg| reg.output(BsrrPin::P7, false));
+      gpiob_cbsrr.write(|reg| {
+        reg.output(BsrrPin::P7, false).output(BsrrPin::P14, false)
+      });
+      gpioc_cbsrr.write(|reg| reg.output(BsrrPin::P7, false));
     } else if position == 0 {
-      gpio_cbsrr.write(|reg| reg.output(BsrrPin::P7, true));
+      gpiob_cbsrr.write(|reg| {
+        reg.output(BsrrPin::P7, true).output(BsrrPin::P14, true)
+      });
+      gpioc_cbsrr.write(|reg| reg.output(BsrrPin::P7, true));
     }
     if self.counter == 0 {
       panic!();

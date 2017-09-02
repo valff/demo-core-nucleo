@@ -27,10 +27,14 @@ pub extern "C" fn handler() -> ! {
   let rcc_ahb2enr = Sreg::new();
   let rcc_cicr = Sreg::new();
   let rcc_cifr = Sreg::new();
-  let gpio_moder = Sreg::new();
-  let gpio_otyper = Sreg::new();
-  let gpio_ospeedr = Sreg::new();
-  let gpio_cbsrr = Sreg::new();
+  let gpiob_moder = Sreg::new();
+  let gpioc_moder = Sreg::new();
+  let gpiob_otyper = Sreg::new();
+  let gpioc_otyper = Sreg::new();
+  let gpiob_ospeedr = Sreg::new();
+  let gpioc_ospeedr = Sreg::new();
+  let gpiob_cbsrr = Sreg::new();
+  let gpioc_cbsrr = Sreg::new();
 
   unsafe {
     memory::bss_init();
@@ -44,12 +48,23 @@ pub extern "C" fn handler() -> ! {
       &dbg_itmtc,
       &dbg_itmtp,
     );
-    peripheral_init(&rcc_ahb2enr, &gpio_moder, &gpio_otyper, &gpio_ospeedr);
+    peripheral_init(
+      &rcc_ahb2enr,
+      &gpiob_moder,
+      &gpioc_moder,
+      &gpiob_otyper,
+      &gpioc_otyper,
+      &gpiob_ospeedr,
+      &gpioc_ospeedr,
+    );
     VectorTable::config(move || {
       (
         NmiConfig { rcc_cicr, rcc_cifr },
         HardFaultConfig {},
-        SysTickConfig { gpio_cbsrr },
+        SysTickConfig {
+          gpiob_cbsrr,
+          gpioc_cbsrr,
+        },
       )
     });
     exceptions_init(&stk_ctrl, &stk_load);
@@ -60,20 +75,42 @@ pub extern "C" fn handler() -> ! {
   }
 }
 
-unsafe fn peripheral_init<A, B, C, D>(
+unsafe fn peripheral_init<A, B, C, D, E, F, G>(
   rcc_ahb2enr: &Reg<rcc::Ahb2enr, A>,
-  gpio_moder: &Reg<gpio::Moder<gpio::port::B>, B>,
-  gpio_otyper: &Reg<gpio::Otyper<gpio::port::B>, C>,
-  gpio_ospeedr: &Reg<gpio::Ospeedr<gpio::port::B>, D>,
+  gpiob_moder: &Reg<gpio::Moder<gpio::port::B>, B>,
+  gpioc_moder: &Reg<gpio::Moder<gpio::port::C>, C>,
+  gpiob_otyper: &Reg<gpio::Otyper<gpio::port::B>, D>,
+  gpioc_otyper: &Reg<gpio::Otyper<gpio::port::C>, E>,
+  gpiob_ospeedr: &Reg<gpio::Ospeedr<gpio::port::B>, F>,
+  gpioc_ospeedr: &Reg<gpio::Ospeedr<gpio::port::C>, G>,
 ) {
-  rcc_ahb2enr.ptr().bits().port_enable(Ahb2enrIop::B, true);
-  gpio_moder
+  rcc_ahb2enr
+    .ptr()
+    .bits()
+    .port_enable(Ahb2enrIop::B, true)
+    .port_enable(Ahb2enrIop::C, true);
+  gpiob_moder.ptr().modify(|reg| {
+    reg
+      .pin_config(ModerPin::P7, Mode::Output)
+      .pin_config(ModerPin::P14, Mode::Output)
+  });
+  gpioc_moder
     .ptr()
     .modify(|reg| reg.pin_config(ModerPin::P7, Mode::Output));
-  gpio_otyper
+  gpiob_otyper.ptr().modify(|reg| {
+    reg
+      .pin_config(OtyperPin::P7, Otype::PushPull)
+      .pin_config(OtyperPin::P14, Otype::PushPull)
+  });
+  gpioc_otyper
     .ptr()
     .modify(|reg| reg.pin_config(OtyperPin::P7, Otype::PushPull));
-  gpio_ospeedr
+  gpiob_ospeedr.ptr().modify(|reg| {
+    reg
+      .pin_config(OspeedrPin::P7, Ospeed::VeryHigh)
+      .pin_config(OspeedrPin::P14, Ospeed::VeryHigh)
+  });
+  gpioc_ospeedr
     .ptr()
     .modify(|reg| reg.pin_config(OspeedrPin::P7, Ospeed::VeryHigh));
 }
