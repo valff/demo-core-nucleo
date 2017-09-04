@@ -7,7 +7,7 @@ Example blinking program for [NUCLEO-L496ZG-P][nucleo-l496zg-p] board using
 ## Effects
 
 * Smooth blinking with the all three user LEDs.
-* Running MCU at the full speed (80 Mhz).
+* Running MCU at the full speed (80 MHz).
 * Using the on-board LSE for MSI auto-calibration.
 * Printing messages through ITM.
 
