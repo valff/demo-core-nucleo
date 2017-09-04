@@ -3,8 +3,8 @@ name = "blink-stm32l4"
 version = "0.1.0"
 dependencies = [
  "clippy 0.0.154 (registry+https://github.com/rust-lang/crates.io-index)",
- "drone 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "drone-test 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "drone 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "drone-test 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -51,29 +51,29 @@ dependencies = [
 
 [[package]]
 name = "drone"
-version = "0.1.1"
+version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
- "drone-core 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "drone-stm32l4 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "drone-core 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "drone-stm32l4 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "drone-core"
-version = "0.1.1"
+version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "drone-stm32l4"
-version = "0.1.1"
+version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
- "drone-core 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "drone-core 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "drone-test"
-version = "0.1.1"
+version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "sc 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -240,10 +240,10 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 "checksum cargo_metadata 0.2.3 (registry+https://github.com/rust-lang/crates.io-index)" = "be1057b8462184f634c3a208ee35b0f935cfd94b694b26deadccd98732088d7b"
 "checksum clippy 0.0.154 (registry+https://github.com/rust-lang/crates.io-index)" = "4fd00bfef6c4fca5dccfef06d86872308ce72a9eec3a4d2b0b39d26c7e3a8e85"
 "checksum clippy_lints 0.0.154 (registry+https://github.com/rust-lang/crates.io-index)" = "7367703e05683f794d8d14f9db1ea643a4d80daae899f04f393da9e725fd06e4"
-"checksum drone 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)" = "5c6d78e18c41548d624b957b751284fffacd4f0b9c7e83964e945fcf231dca8b"
-"checksum drone-core 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)" = "775091e4730bab89052d06c951ad5ff70b445700561c1713024ba496839e3f5e"
-"checksum drone-stm32l4 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)" = "31d96305165aa3948602ce18d827098f1066d5356f13619309f0a7236bc64353"
-"checksum drone-test 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)" = "6fc8e3f4599577d7052287907e1fc6a6c84bf8de1ca0ceebb55b7c73710548c7"
+"checksum drone 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)" = "7252861e2a5f257c108e546675293fc5bac5a3797613411d77b30d829514b9ef"
+"checksum drone-core 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)" = "3a2a9b1c39f93d660613c4419a4afd09392191b1dccd3973fa654b1eff0e81dc"
+"checksum drone-stm32l4 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)" = "157c072460231b4bfe0be6f797b6440ca7548c9dcb1d884e4eaf755479624da6"
+"checksum drone-test 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)" = "966dabe6f6819b28a022a91ee3689d0530daecf7e0b0d95c0fe88bd327612770"
 "checksum dtoa 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)" = "09c3753c3db574d215cba4ea76018483895d7bff25a31b49ba45db21c48e50ab"
 "checksum either 1.1.0 (registry+https://github.com/rust-lang/crates.io-index)" = "18785c1ba806c258137c937e44ada9ee7e69a37e3c72077542cd2f069d78562a"
 "checksum getopts 0.2.14 (registry+https://github.com/rust-lang/crates.io-index)" = "d9047cfbd08a437050b363d35ef160452c5fe8ea5187ae0a624708c91581d685"

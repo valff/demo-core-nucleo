@@ -4,4 +4,4 @@ target = "thumbv7em-none-eabihf"
 config = ["board/stm32l4discovery.cfg"]
 
 [itm]
-frequency = 72_000_000
+frequency = 80_000_000

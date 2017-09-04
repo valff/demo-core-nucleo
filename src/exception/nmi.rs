@@ -6,22 +6,22 @@ use drone::reg::{Delegate, Reg, Sreg, ValuePointer};
 use drone::reg::rcc::{self, CicrBits, CifrBits};
 
 static mut NMI: Nmi = Nmi {
-  rcc_cicr: Reg::new(),
   rcc_cifr: Reg::new(),
+  rcc_cicr: Reg::new(),
 };
 
 /// The exception routine data.
 pub struct Nmi {
-  rcc_cicr: Sreg<rcc::Cicr>,
   rcc_cifr: Sreg<rcc::Cifr>,
+  rcc_cicr: Sreg<rcc::Cicr>,
 }
 
 /// The exception configuration data.
 pub struct NmiConfig {
-  /// Clock interrupt clear register.
-  pub rcc_cicr: Sreg<rcc::Cicr>,
   /// Clock interrupt flag register.
   pub rcc_cifr: Sreg<rcc::Cifr>,
+  /// Clock interrupt clear register.
+  pub rcc_cicr: Sreg<rcc::Cicr>,
 }
 
 /// The exception handler.
@@ -34,16 +34,16 @@ impl Exception for Nmi {
 
   unsafe fn config(config: NmiConfig) {
     let data = &mut NMI;
-    data.rcc_cicr = config.rcc_cicr;
     data.rcc_cifr = config.rcc_cifr;
+    data.rcc_cicr = config.rcc_cicr;
   }
 
   fn run(&mut self) {
     let rcc_cifr = self.rcc_cifr.ptr();
-    if rcc_cifr.read().css() {
+    if rcc_cifr.read().lse_css() {
       let rcc_cicr = self.rcc_cicr.ptr();
-      rcc_cicr.modify(|reg| reg.css_clear());
-      panic!("HSE clock failure");
+      rcc_cicr.modify(|reg| reg.lse_css_clear());
+      panic!("LSE clock failure");
     } else {
       panic!("Unknown NMI");
     }

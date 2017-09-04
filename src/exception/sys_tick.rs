@@ -50,14 +50,14 @@ impl Exception for SysTick {
     let position = self.counter & ((0b1 << WIDTH) - 1);
     if lightness == position {
       gpiob_cbsrr.write(|reg| {
-        reg.output(BsrrPin::P7, false).output(BsrrPin::P14, false)
-      });
-      gpioc_cbsrr.write(|reg| reg.output(BsrrPin::P7, false));
-    } else if position == 0 {
-      gpiob_cbsrr.write(|reg| {
-        reg.output(BsrrPin::P7, true).output(BsrrPin::P14, true)
+        reg.output(BsrrPin::P7, false).output(BsrrPin::P14, true)
       });
       gpioc_cbsrr.write(|reg| reg.output(BsrrPin::P7, true));
+    } else if position == 0 {
+      gpiob_cbsrr.write(|reg| {
+        reg.output(BsrrPin::P7, true).output(BsrrPin::P14, false)
+      });
+      gpioc_cbsrr.write(|reg| reg.output(BsrrPin::P7, false));
     }
     if self.counter == 0 {
       panic!();
