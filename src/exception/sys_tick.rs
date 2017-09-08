@@ -2,31 +2,31 @@
 //! reaches zero.
 
 use drone::exception::Exception;
-use drone::reg::{Delegate, Reg, Sreg, ValuePointer};
-use drone::reg::gpio::{self, BsrrBits, BsrrPin};
+use drone_stm32::reg::{GpiobBsrr, GpiocBsrr};
+use drone_stm32::reg::prelude::*;
 
 const WIDTH: u32 = 5;
 const SPEED: u32 = 1;
 
 static mut SYS_TICK: SysTick = SysTick {
-  gpiob_cbsrr: Reg::new(),
-  gpioc_cbsrr: Reg::new(),
+  gpiob_bsrr: None,
+  gpioc_bsrr: None,
   counter: ((0b1 << (WIDTH * 2)) << SPEED) - 1,
 };
 
 /// The exception routine data.
 pub struct SysTick {
-  gpiob_cbsrr: Sreg<gpio::Bsrr<gpio::port::B>>,
-  gpioc_cbsrr: Sreg<gpio::Bsrr<gpio::port::C>>,
+  gpiob_bsrr: Option<GpiobBsrr<Local>>,
+  gpioc_bsrr: Option<GpiocBsrr<Local>>,
   counter: u32,
 }
 
 /// The exception configuration data.
 pub struct SysTickConfig {
   /// Port B bit set/reset register.
-  pub gpiob_cbsrr: Sreg<gpio::Bsrr<gpio::port::B>>,
+  pub gpiob_bsrr: GpiobBsrr<Local>,
   /// Port C bit set/reset register.
-  pub gpioc_cbsrr: Sreg<gpio::Bsrr<gpio::port::C>>,
+  pub gpioc_bsrr: GpiocBsrr<Local>,
 }
 
 /// The exception handler.
@@ -39,30 +39,28 @@ impl Exception for SysTick {
 
   unsafe fn config(config: SysTickConfig) {
     let data = &mut SYS_TICK;
-    data.gpiob_cbsrr = config.gpiob_cbsrr;
-    data.gpioc_cbsrr = config.gpioc_cbsrr;
+    data.gpiob_bsrr = Some(config.gpiob_bsrr);
+    data.gpioc_bsrr = Some(config.gpioc_bsrr);
   }
 
   fn run(&mut self) {
-    let gpiob_cbsrr = self.gpiob_cbsrr.ptr();
-    let gpioc_cbsrr = self.gpioc_cbsrr.ptr();
-    let lightness = self.counter >> WIDTH >> SPEED;
-    let position = self.counter & ((0b1 << WIDTH) - 1);
-    if lightness == position {
-      gpiob_cbsrr.write(|reg| {
-        reg.output(BsrrPin::P7, false).output(BsrrPin::P14, true)
-      });
-      gpioc_cbsrr.write(|reg| reg.output(BsrrPin::P7, true));
-    } else if position == 0 {
-      gpiob_cbsrr.write(|reg| {
-        reg.output(BsrrPin::P7, true).output(BsrrPin::P14, false)
-      });
-      gpioc_cbsrr.write(|reg| reg.output(BsrrPin::P7, false));
-    }
-    if self.counter == 0 {
-      panic!();
-    } else {
-      self.counter -= 1;
+    if let Some(ref mut gpiob_bsrr) = self.gpiob_bsrr {
+      if let Some(ref mut gpioc_bsrr) = self.gpioc_bsrr {
+        let lightness = self.counter >> WIDTH >> SPEED;
+        let position = self.counter & ((0b1 << WIDTH) - 1);
+        if lightness == position {
+          gpiob_bsrr.write_with(|reg| reg.set_br7(true).set_bs14(true));
+          gpioc_bsrr.write_with(|reg| reg.set_bs7(true));
+        } else if position == 0 {
+          gpiob_bsrr.write_with(|reg| reg.set_bs7(true).set_br14(true));
+          gpioc_bsrr.write_with(|reg| reg.set_br7(true));
+        }
+        if self.counter == 0 {
+          panic!();
+        } else {
+          self.counter -= 1;
+        }
+      }
     }
   }
 }

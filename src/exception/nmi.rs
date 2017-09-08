@@ -2,26 +2,26 @@
 //! by software. This is the highest priority exception other than reset.
 
 use drone::exception::Exception;
-use drone::reg::{Delegate, Reg, Sreg, ValuePointer};
-use drone::reg::rcc::{self, CicrBits, CifrBits};
+use drone_stm32::reg::{RccCicr, RccCifr};
+use drone_stm32::reg::prelude::*;
 
 static mut NMI: Nmi = Nmi {
-  rcc_cifr: Reg::new(),
-  rcc_cicr: Reg::new(),
+  rcc_cifr: None,
+  rcc_cicr: None,
 };
 
 /// The exception routine data.
 pub struct Nmi {
-  rcc_cifr: Sreg<rcc::Cifr>,
-  rcc_cicr: Sreg<rcc::Cicr>,
+  rcc_cifr: Option<RccCifr<Local>>,
+  rcc_cicr: Option<RccCicr<Local>>,
 }
 
 /// The exception configuration data.
 pub struct NmiConfig {
   /// Clock interrupt flag register.
-  pub rcc_cifr: Sreg<rcc::Cifr>,
+  pub rcc_cifr: RccCifr<Local>,
   /// Clock interrupt clear register.
-  pub rcc_cicr: Sreg<rcc::Cicr>,
+  pub rcc_cicr: RccCicr<Local>,
 }
 
 /// The exception handler.
@@ -34,18 +34,20 @@ impl Exception for Nmi {
 
   unsafe fn config(config: NmiConfig) {
     let data = &mut NMI;
-    data.rcc_cifr = config.rcc_cifr;
-    data.rcc_cicr = config.rcc_cicr;
+    data.rcc_cifr = Some(config.rcc_cifr);
+    data.rcc_cicr = Some(config.rcc_cicr);
   }
 
   fn run(&mut self) {
-    let rcc_cifr = self.rcc_cifr.ptr();
-    if rcc_cifr.read().lse_css() {
-      let rcc_cicr = self.rcc_cicr.ptr();
-      rcc_cicr.modify(|reg| reg.lse_css_clear());
-      panic!("LSE clock failure");
-    } else {
-      panic!("Unknown NMI");
+    if let Some(ref rcc_cifr) = self.rcc_cifr {
+      if rcc_cifr.read().lsecssf() {
+        if let Some(ref mut rcc_cicr) = self.rcc_cicr {
+          rcc_cicr.write_with(|reg| reg.set_lsecssc(true));
+        }
+        panic!("LSE clock failure");
+      } else {
+        panic!("Unknown NMI");
+      }
     }
   }
 }

@@ -1,4 +1,5 @@
 target = "thumbv7em-none-eabihf"
+test_target = "thumbv7em-linux-eabihf"
 
 [openocd]
 config = ["board/stm32l4discovery.cfg"]

@@ -2,16 +2,15 @@
 
 use VectorTable;
 use consts::{PLLCLK_FACTOR, PLL_INPUT_FACTOR, PLL_OUTPUT_FACTOR, SYS_TICK_SEC};
-use drone::{itm, memory, util};
 use drone::exception::ExceptionTable;
-use drone::reg::{stk, AliasPointer, Delegate, Reg, Sreg, ValuePointer};
-use drone::reg::flash::{self, AcrBits};
-use drone::reg::gpio::{self, Mode, ModerPin, Ospeed, OspeedrPin, Otype,
-                       OtyperPin};
-use drone::reg::pwr::{self, Cr1Bits};
-use drone::reg::rcc::{self, Ahb2enrBits, Ahb2enrIop, Apb1enr1Bits, BdcrBits,
-                      BdcrRtcClock, CfgrSystemClock, CierBits, CrBits,
-                      CrMsiRange, PllcfgrBits, PllcfgrPllSource};
+use drone::memory;
+use drone_stm32::{itm, util};
+use drone_stm32::reg::{FlashAcr, GpiobBsrr, GpiobModer, GpiobOspeedr,
+                       GpiobOtyper, GpiocBsrr, GpiocModer, GpiocOspeedr,
+                       GpiocOtyper, PwrCr1, RccAhb2Enr, RccApb1Enr1, RccBdcr,
+                       RccCfgr, RccCicr, RccCier, RccCifr, RccCr, RccPllcfgr,
+                       StkCtrl, StkLoad};
+use drone_stm32::reg::prelude::*;
 use exception::{HardFaultConfig, NmiConfig, SysTickConfig};
 
 /// The exception handler.
@@ -19,77 +18,62 @@ use exception::{HardFaultConfig, NmiConfig, SysTickConfig};
 pub extern "C" fn handler() -> ! {
   // NOTE For each register delegate in this scope should exists exactly one
   // instance.
-  let dbg_mcucr = Sreg::new();
-  let dbg_demcr = Sreg::new();
-  let dbg_tpiuspp = Sreg::new();
-  let dbg_tpiuffc = Sreg::new();
-  let dbg_itmla = Sreg::new();
-  let dbg_itmtc = Sreg::new();
-  let dbg_itmtp = Sreg::new();
-  let stk_ctrl = Sreg::new();
-  let stk_load = Sreg::new();
-  let pwr_cr1 = Sreg::new();
-  let flash_acr = Sreg::new();
-  let rcc_ahb2enr = Sreg::new();
-  let rcc_apb1enr1 = Sreg::new();
-  let rcc_cr = Sreg::new();
-  let rcc_cfgr = Sreg::new();
-  let rcc_cier = Sreg::new();
-  let rcc_cifr = Sreg::new();
-  let rcc_cicr = Sreg::new();
-  let rcc_pllcfgr = Sreg::new();
-  let rcc_bdcr = Sreg::new();
-  let gpiob_moder = Sreg::new();
-  let gpioc_moder = Sreg::new();
-  let gpiob_otyper = Sreg::new();
-  let gpioc_otyper = Sreg::new();
-  let gpiob_ospeedr = Sreg::new();
-  let gpioc_ospeedr = Sreg::new();
-  let gpiob_cbsrr = Sreg::new();
-  let gpioc_cbsrr = Sreg::new();
+  let stk_ctrl = unsafe { StkCtrl::attach() };
+  let stk_load = unsafe { StkLoad::attach() };
+  let pwr_cr1 = unsafe { PwrCr1::attach() };
+  let flash_acr = unsafe { FlashAcr::attach() };
+  let rcc_ahb2enr = unsafe { RccAhb2Enr::attach() };
+  let rcc_apb1enr1 = unsafe { RccApb1Enr1::attach() };
+  let rcc_cr = unsafe { RccCr::attach() };
+  let rcc_cfgr = unsafe { RccCfgr::attach() };
+  let rcc_cier = unsafe { RccCier::attach() };
+  let rcc_cifr = unsafe { RccCifr::attach() };
+  let rcc_cicr = unsafe { RccCicr::attach() };
+  let rcc_pllcfgr = unsafe { RccPllcfgr::attach() };
+  let rcc_bdcr = unsafe { RccBdcr::attach() };
+  let gpiob_moder = unsafe { GpiobModer::attach() };
+  let gpioc_moder = unsafe { GpiocModer::attach() };
+  let gpiob_otyper = unsafe { GpiobOtyper::attach() };
+  let gpioc_otyper = unsafe { GpiocOtyper::attach() };
+  let gpiob_ospeedr = unsafe { GpiobOspeedr::attach() };
+  let gpioc_ospeedr = unsafe { GpiocOspeedr::attach() };
+  let gpiob_bsrr = unsafe { GpiobBsrr::attach() };
+  let gpioc_bsrr = unsafe { GpiocBsrr::attach() };
 
   unsafe {
     memory::bss_init();
     memory::data_init();
-    itm::init(
-      &dbg_mcucr,
-      &dbg_demcr,
-      &dbg_tpiuspp,
-      &dbg_tpiuffc,
-      &dbg_itmla,
-      &dbg_itmtc,
-      &dbg_itmtp,
-    );
+    itm::init();
     clock_init(
-      &pwr_cr1,
-      &flash_acr,
-      &rcc_apb1enr1,
-      &rcc_cr,
-      &rcc_cfgr,
-      &rcc_cier,
-      &rcc_pllcfgr,
-      &rcc_bdcr,
+      pwr_cr1,
+      flash_acr,
+      rcc_apb1enr1,
+      rcc_cr,
+      rcc_cfgr,
+      rcc_cier,
+      rcc_pllcfgr,
+      rcc_bdcr,
     );
     peripheral_init(
-      &rcc_ahb2enr,
-      &gpiob_moder,
-      &gpioc_moder,
-      &gpiob_otyper,
-      &gpioc_otyper,
-      &gpiob_ospeedr,
-      &gpioc_ospeedr,
+      rcc_ahb2enr,
+      gpiob_moder,
+      gpioc_moder,
+      gpiob_otyper,
+      gpioc_otyper,
+      gpiob_ospeedr,
+      gpioc_ospeedr,
     );
     VectorTable::config(move || {
       (
         NmiConfig { rcc_cifr, rcc_cicr },
         HardFaultConfig {},
         SysTickConfig {
-          gpiob_cbsrr,
-          gpioc_cbsrr,
+          gpiob_bsrr,
+          gpioc_bsrr,
         },
       )
     });
-    exceptions_init(&stk_ctrl, &stk_load);
+    exceptions_init(stk_ctrl, stk_load);
   }
 
   loop {
@@ -98,114 +82,70 @@ pub extern "C" fn handler() -> ! {
 }
 
 #[cfg_attr(feature = "clippy", allow(too_many_arguments))]
-unsafe fn clock_init<A, B, C, D, E, F, G, H>(
-  pwr_cr1: &Reg<pwr::Cr1, A>,
-  flash_acr: &Reg<flash::Acr, B>,
-  rcc_apb1enr1: &Reg<rcc::Apb1enr1, C>,
-  rcc_cr: &Reg<rcc::Cr, D>,
-  rcc_cfgr: &Reg<rcc::Cfgr, E>,
-  rcc_cier: &Reg<rcc::Cier, F>,
-  rcc_pllcfgr: &Reg<rcc::Pllcfgr, G>,
-  rcc_bdcr: &Reg<rcc::Bdcr, H>,
+unsafe fn clock_init(
+  mut pwr_cr1: PwrCr1<Local>,
+  mut flash_acr: FlashAcr<Local>,
+  mut rcc_apb1enr1: RccApb1Enr1<Local>,
+  mut rcc_cr: RccCr<Local>,
+  mut rcc_cfgr: RccCfgr<Local>,
+  mut rcc_cier: RccCier<Local>,
+  mut rcc_pllcfgr: RccPllcfgr<Local>,
+  mut rcc_bdcr: RccBdcr<Local>,
 ) {
-  let pwr_cr1 = pwr_cr1.ptr();
-  let flash_acr = flash_acr.ptr();
-  let rcc_apb1enr1 = rcc_apb1enr1.ptr();
-  let rcc_cr = rcc_cr.ptr();
-  let rcc_cfgr = rcc_cfgr.ptr();
-  let rcc_cier = rcc_cier.ptr();
-  let rcc_pllcfgr = rcc_pllcfgr.ptr();
-  let rcc_bdcr = rcc_bdcr.ptr();
-
-  rcc_apb1enr1.modify(|reg| reg.power_enable(true));
-
-  pwr_cr1.modify(|reg| reg.backup_domain_protection_disable(true));
-
-  rcc_bdcr.modify(|reg| {
-    reg
-      .lse_enable(true)
-      .lse_bypass(false)
-      .rtc_source(BdcrRtcClock::Lse)
-  });
-  while !rcc_bdcr.read().lse_ready() {}
-  rcc_bdcr.modify(|reg| reg.lse_css_enable(true));
-
-  rcc_cier.modify(|reg| reg.lse_css_interrupt_enable(true));
-
+  rcc_apb1enr1.modify(|reg| reg.set_pwren(true));
+  pwr_cr1.modify(|reg| reg.set_dbp(true));
+  rcc_bdcr.modify(|reg| reg.set_lseon(true).set_lsebyp(false).set_rtcsel(0b01));
+  while !rcc_bdcr.read().lserdy() {}
+  rcc_bdcr.modify(|reg| reg.set_lsecsson(true));
+  rcc_cier.modify(|reg| reg.set_lsecssie(true));
   rcc_cr.modify(|reg| {
     reg
-      .msi_pll_enable(true)
-      .msi_range_selection()
-      .msi_range(CrMsiRange::Range8Mhz)
+      .set_msipllen(true)
+      .set_msirgsel(true)
+      .set_msirange(0b0111)
   });
-
   rcc_pllcfgr.modify(|reg| {
     reg
-      .pll_source(PllcfgrPllSource::Msi)
-      .pllclk_enable(true)
-      .pllclk_factor(PLLCLK_FACTOR)
-      .pll_input_factor(PLL_INPUT_FACTOR)
-      .pll_output_factor(PLL_OUTPUT_FACTOR)
+      .set_pllsrc(0b01)
+      .set_pllren(true)
+      .set_pllr((PLLCLK_FACTOR >> 1) - 1)
+      .set_pllm(PLL_INPUT_FACTOR - 1)
+      .set_plln(PLL_OUTPUT_FACTOR)
   });
-
-  rcc_cr.modify(|reg| reg.pll_enable(true));
-  while !rcc_cr.read().pll_ready() {}
-
+  rcc_cr.modify(|reg| reg.set_pllon(true));
+  while !rcc_cr.read().pllrdy() {}
   flash_acr.modify(|reg| {
     reg
-      .prefetch_enable(true)
-      .instruction_cache_enable(true)
-      .data_cache_enable(true)
-      .latency(2)
+      .set_prften(true)
+      .set_icen(true)
+      .set_dcen(true)
+      .set_latency(2)
   });
-
-  rcc_cfgr.modify(|reg| reg.system_clock(CfgrSystemClock::Pll));
+  rcc_cfgr.modify(|reg| reg.set_sw(0b11));
 }
 
-unsafe fn peripheral_init<A, B, C, D, E, F, G>(
-  rcc_ahb2enr: &Reg<rcc::Ahb2enr, A>,
-  gpiob_moder: &Reg<gpio::Moder<gpio::port::B>, B>,
-  gpioc_moder: &Reg<gpio::Moder<gpio::port::C>, C>,
-  gpiob_otyper: &Reg<gpio::Otyper<gpio::port::B>, D>,
-  gpioc_otyper: &Reg<gpio::Otyper<gpio::port::C>, E>,
-  gpiob_ospeedr: &Reg<gpio::Ospeedr<gpio::port::B>, F>,
-  gpioc_ospeedr: &Reg<gpio::Ospeedr<gpio::port::C>, G>,
+unsafe fn peripheral_init(
+  mut rcc_ahb2enr: RccAhb2Enr<Local>,
+  mut gpiob_moder: GpiobModer<Local>,
+  mut gpioc_moder: GpiocModer<Local>,
+  mut gpiob_otyper: GpiobOtyper<Local>,
+  mut gpioc_otyper: GpiocOtyper<Local>,
+  mut gpiob_ospeedr: GpiobOspeedr<Local>,
+  mut gpioc_ospeedr: GpiocOspeedr<Local>,
 ) {
-  rcc_ahb2enr
-    .ptr()
-    .bits()
-    .port_enable(Ahb2enrIop::B, true)
-    .port_enable(Ahb2enrIop::C, true);
-  gpiob_moder.ptr().modify(|reg| {
-    reg
-      .pin_config(ModerPin::P7, Mode::Output)
-      .pin_config(ModerPin::P14, Mode::Output)
-  });
-  gpioc_moder
-    .ptr()
-    .modify(|reg| reg.pin_config(ModerPin::P7, Mode::Output));
-  gpiob_otyper.ptr().modify(|reg| {
-    reg
-      .pin_config(OtyperPin::P7, Otype::PushPull)
-      .pin_config(OtyperPin::P14, Otype::PushPull)
-  });
-  gpioc_otyper
-    .ptr()
-    .modify(|reg| reg.pin_config(OtyperPin::P7, Otype::PushPull));
-  gpiob_ospeedr.ptr().modify(|reg| {
-    reg
-      .pin_config(OspeedrPin::P7, Ospeed::VeryHigh)
-      .pin_config(OspeedrPin::P14, Ospeed::VeryHigh)
-  });
-  gpioc_ospeedr
-    .ptr()
-    .modify(|reg| reg.pin_config(OspeedrPin::P7, Ospeed::VeryHigh));
+  rcc_ahb2enr.modify(|reg| reg.set_gpioben(true).set_gpiocen(true));
+  gpiob_moder.modify(|reg| reg.set_moder7(0b01).set_moder14(0b01));
+  gpioc_moder.modify(|reg| reg.set_moder7(0b01));
+  gpiob_otyper.modify(|reg| reg.set_ot7(false).set_ot14(false));
+  gpioc_otyper.modify(|reg| reg.set_ot7(false));
+  gpiob_ospeedr.modify(|reg| reg.set_ospeedr7(0b11).set_ospeedr14(0b11));
+  gpioc_ospeedr.modify(|reg| reg.set_ospeedr7(0b11));
 }
 
-unsafe fn exceptions_init<A, B>(
-  stk_ctrl: &Reg<stk::Ctrl, A>,
-  stk_load: &Reg<stk::Load, B>,
+unsafe fn exceptions_init(
+  mut stk_ctrl: StkCtrl<Local>,
+  mut stk_load: StkLoad<Local>,
 ) {
-  stk_load.ptr().write(|reg| reg.value(SYS_TICK_SEC / 2048));
-  stk_ctrl.ptr().modify(|reg| reg.enable(true).tick(true));
+  stk_load.write_with(|reg| reg.set_reload(SYS_TICK_SEC / 2048));
+  stk_ctrl.modify(|reg| reg.set_enable(true).set_tickint(true));
 }

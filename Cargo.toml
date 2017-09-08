@@ -13,11 +13,16 @@ repository = "https://github.com/valff/blink-stm32l4"
 clippy = {version = "*", optional = true}
 
 [dependencies.drone]
-version = "0.1"
-features = ["stm32l4"]
+version = "0.2"
 
-[dev-dependencies.drone-test]
-version = "0.1"
+[dependencies.drone-stm32]
+version = "0.2"
+features = ["stm32l4x6"]
+
+[dev-dependencies.test]
+version = "0.2"
+features = []
+git = "https://github.com/valff/drone-test"
 
 [lib]
 

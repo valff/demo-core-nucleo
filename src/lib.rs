@@ -3,13 +3,14 @@
 #![feature(naked_functions)]
 #![feature(compiler_builtins_lib)]
 #![no_std]
-#![deny(missing_docs)]
+#![warn(missing_docs)]
 #![cfg_attr(feature = "clippy", feature(plugin))]
 #![cfg_attr(feature = "clippy", plugin(clippy))]
 #![cfg_attr(feature = "clippy", allow(precedence, doc_markdown))]
 
 extern crate compiler_builtins;
 extern crate drone;
+extern crate drone_stm32;
 #[cfg(test)]
 #[macro_use]
 extern crate test;
