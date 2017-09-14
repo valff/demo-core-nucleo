@@ -1,7 +1,11 @@
 //! Example blinking program for *STM32L4*-series MCU.
-#![feature(const_fn)]
-#![feature(naked_functions)]
+#![feature(asm)]
 #![feature(compiler_builtins_lib)]
+#![feature(const_fn)]
+#![feature(drop_types_in_const)]
+#![feature(generators)]
+#![feature(generator_trait)]
+#![feature(naked_functions)]
 #![no_std]
 #![warn(missing_docs)]
 #![cfg_attr(feature = "clippy", feature(plugin))]
@@ -10,13 +14,15 @@
 
 extern crate compiler_builtins;
 extern crate drone;
+#[macro_use]
 extern crate drone_stm32;
 #[cfg(test)]
 #[macro_use]
 extern crate test;
 
-pub use vector_table::VectorTable;
+pub use reset::main;
+pub use vtable::VectorTable;
 
 pub mod consts;
-pub mod exception;
-pub mod vector_table;
+pub mod vtable;
+pub mod reset;

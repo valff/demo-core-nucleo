@@ -9,7 +9,7 @@ SECTIONS
 {
   .vector_table ORIGIN(FLASH) :
   {
-    LONG(ORIGIN(SRAM1) + LENGTH(SRAM1)); /* Main Stack Pointer */
+    LONG(ORIGIN(SRAM2) + LENGTH(SRAM2));
     KEEP(*(.rodata.VECTOR_TABLE));
   } > FLASH
 
@@ -28,15 +28,18 @@ SECTIONS
     BSS_START = .;
     *(.bss.*);
     BSS_END = ALIGN(4);
-  } > SRAM1
+  } > SRAM2
 
   .data : ALIGN(4)
   {
     DATA_START = .;
     *(.data.*);
     DATA_END = ALIGN(4);
-  } > SRAM1 AT > FLASH
+  } > SRAM2 AT > FLASH
   DATA_CONST = LOADADDR(.data);
+
+  HEAP_START = ORIGIN(SRAM1);
+  HEAP_END = ORIGIN(SRAM1) + LENGTH(SRAM1);
 
   /DISCARD/ :
   {
