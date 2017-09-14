@@ -3,10 +3,10 @@
 #![no_main]
 #![no_std]
 
-extern crate blink_stm32l4;
+extern crate blink_nucleo;
 extern crate drone_stm32;
 
-use blink_stm32l4::{main, VectorTable};
+use blink_nucleo::{main, VectorTable};
 use drone_stm32::mcu;
 
 #[no_mangle]

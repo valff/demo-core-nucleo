@@ -1,5 +1,5 @@
 [root]
-name = "blink-stm32l4"
+name = "blink-nucleo"
 version = "0.1.0"
 dependencies = [
  "clippy 0.0.158 (registry+https://github.com/rust-lang/crates.io-index)",

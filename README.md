@@ -1,5 +1,5 @@
-blink-stm32l4
-=============
+blink-nucleo
+============
 
 Example blinking program for [NUCLEO-L496ZG-P][nucleo-l496zg-p] board using
 [Drone][drone] RTOS.

@@ -1,4 +1,9 @@
-//! Example blinking program for *STM32L4*-series MCU.
+//! Example blinking program for [NUCLEO-L496ZG-P][nucleo-l496zg-p] board using
+//! [Drone][drone] RTOS.
+//!
+//! [drone]: https://github.com/valff/drone
+//! [nucleo-l496zg-p]:
+//! http://www.st.com/en/evaluation-tools/nucleo-l496zg-p.html
 #![feature(asm)]
 #![feature(compiler_builtins_lib)]
 #![feature(const_fn)]
