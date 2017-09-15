@@ -11,19 +11,16 @@ repository = "https://github.com/valff/blink-nucleo"
 clippy = {version = "*", optional = true}
 
 [dependencies.drone]
-version = "0.3"
-# path = "../drone"
+version = "0.4"
 
 [dependencies.drone-stm32]
-version = "0.3"
+version = "0.4"
 features = ["stm32l4x6"]
-# path = "../drone-stm32"
 
 [dev-dependencies.test]
 version = "0.2"
 features = []
 git = "https://github.com/valff/drone-test"
-# path = "../drone-test"
 
 [[bin]]
 name = "blink-nucleo"

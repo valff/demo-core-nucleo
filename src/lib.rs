@@ -4,12 +4,9 @@
 //! [drone]: https://github.com/valff/drone
 //! [nucleo-l496zg-p]:
 //! http://www.st.com/en/evaluation-tools/nucleo-l496zg-p.html
-#![feature(asm)]
 #![feature(compiler_builtins_lib)]
 #![feature(const_fn)]
-#![feature(drop_types_in_const)]
 #![feature(generators)]
-#![feature(generator_trait)]
 #![feature(naked_functions)]
 #![no_std]
 #![warn(missing_docs)]

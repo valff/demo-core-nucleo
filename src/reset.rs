@@ -46,12 +46,12 @@ pub fn main() {
   }
 
   // Panic on Hard Fault.
-  vtable::hard_fault::append_callback(move || {
+  vtable::hard_fault().push_callback(move || {
     panic!("Hard Fault");
   });
 
   // Panic on LSE failure.
-  vtable::nmi::append(move || loop {
+  vtable::nmi().push(move || loop {
     if rcc_cifr.read().lsecssf() {
       rcc_cicr.write(|reg| reg.set_lsecssc(true));
       panic!("LSE clock failure");
@@ -86,7 +86,7 @@ pub fn main() {
   });
   nvic_iser0.modify(|reg| reg.set_bit(5, true));
   rcc_cier.modify(|reg| reg.set_pllrdyie(true));
-  vtable::rcc::append(move || loop {
+  vtable::rcc().push(move || loop {
     // When PLL is ready.
     if rcc_cifr.read().pllrdyf() {
       rcc_cicr.write(|reg| reg.set_pllrdyc(true));
@@ -112,7 +112,7 @@ pub fn main() {
       // Setup counter routine.
       stk_load.write(|reg| reg.set_reload(SYS_TICK_SEC / 2048));
       let mut counter = ((0b1 << (WIDTH * 2)) << SPEED) - 1;
-      vtable::sys_tick::append(move || loop {
+      vtable::sys_tick().push(move || loop {
         let lightness = counter >> WIDTH >> SPEED;
         let position = counter & ((0b1 << WIDTH) - 1);
         if lightness == position {
