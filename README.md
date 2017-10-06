@@ -1,8 +1,6 @@
-blink-nucleo
-============
+# blink-nucleo
 
-Example blinking program for [NUCLEO-L496ZG-P][nucleo-l496zg-p] board using
-[Drone][drone] RTOS.
+Example blinking program for [NUCLEO-L496ZG-P] board based on [Drone].
 
 ## Effects
 
@@ -25,6 +23,10 @@ Listen to the ITM stream for connected device with the following command:
 $ cargo drone server --itm
 ```
 
+[Drone]: https://github.com/valff/drone
+[NUCLEO-L496ZG-P]:
+http://www.st.com/en/evaluation-tools/nucleo-l496zg-p.html
+
 ## License
 
 Licensed under either of
@@ -41,6 +43,3 @@ at your option.
 Unless you explicitly state otherwise, any contribution intentionally submitted
 for inclusion in the work by you, as defined in the Apache-2.0 license, shall be
 dual licensed as above, without any additional terms or conditions.
-
-[drone]: https://github.com/valff/drone
-[nucleo-l496zg-p]: http://www.st.com/en/evaluation-tools/nucleo-l496zg-p.html

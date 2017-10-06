@@ -1,14 +1,16 @@
 //! The vector table to interrupt service routines.
 
-vtable! {
-  #[doc = "Non maskable interrupt."]
-  nmi,
-  #[doc = "All classes of fault."]
-  hard_fault,
-  #[doc = "System tick timer."]
-  sys_tick,
-  #[doc = "RCC global interrupt."]
-  irq5,
-}
+use drone_cortex_m::vtable;
 
-pub use self::irq5 as rcc;
+vtable! {
+  //! The vector table.
+
+  /// Non maskable interrupt.
+  nmi;
+  /// All classes of fault.
+  hard_fault;
+  /// System tick timer.
+  sys_tick;
+  /// RCC global interrupt.
+  5: rcc;
+}

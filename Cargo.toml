@@ -7,23 +7,28 @@ readme = "README.md"
 license = "MIT/Apache-2.0"
 repository = "https://github.com/valff/blink-nucleo"
 
-[dependencies]
-clippy = {version = "*", optional = true}
-
 [dependencies.drone]
-version = "0.4"
+version = "0.5"
+path = "../drone"
 
-[dependencies.drone-stm32]
-version = "0.4"
+[dependencies.drone-cortex-m]
+version = "0.5"
 features = ["stm32l4x6"]
+path = "../drone-cortex-m"
+
+[dependencies.clippy]
+version = "*"
+optional = true
 
 [dev-dependencies.test]
 version = "0.2"
 features = []
-git = "https://github.com/valff/drone-test"
+# git = "https://github.com/valff/drone-test"
+path = "../drone-test"
 
 [[bin]]
 name = "blink-nucleo"
+path = "src/main.rs"
 test = false
 doc = false
 

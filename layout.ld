@@ -38,8 +38,11 @@ SECTIONS
   } > SRAM2 AT > FLASH
   DATA_CONST = LOADADDR(.data);
 
-  HEAP_START = ORIGIN(SRAM1);
-  HEAP_END = ORIGIN(SRAM1) + LENGTH(SRAM1);
+  .heap : ALIGN(4)
+  {
+    HEAP_START = .;
+    . += 0x40000;
+  } > SRAM1
 
   /DISCARD/ :
   {

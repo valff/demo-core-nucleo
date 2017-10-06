@@ -2,12 +2,22 @@
 
 use consts::{PLLCLK_FACTOR, PLL_INPUT_FACTOR, PLL_OUTPUT_FACTOR, SYS_TICK_SEC};
 use drone::mem;
-use drone_stm32::{itm, reg};
-use drone_stm32::reg::prelude::*;
+use drone_cortex_m::{itm, reg};
+use drone_cortex_m::reg::prelude::*;
+use heap;
 use vtable;
 
 const WIDTH: u32 = 5;
 const SPEED: u32 = 1;
+
+extern "C" {
+  static mut BSS_START: usize;
+  static BSS_END: usize;
+  static mut DATA_START: usize;
+  static DATA_END: usize;
+  static DATA_CONST: usize;
+  static mut HEAP_START: usize;
+}
 
 /// The program entry point.
 pub fn main() {
@@ -39,10 +49,10 @@ pub fn main() {
 
   // Important initialization before all other code.
   unsafe {
-    mem::bss_init();
-    mem::data_init();
-    mem::heap_init();
-    itm::init();
+    itm::itm_init();
+    mem::bss_init(&mut BSS_START, &BSS_END);
+    mem::data_init(&mut DATA_START, &DATA_END, &DATA_CONST);
+    heap::heap_init(&mut HEAP_START);
   }
 
   // Panic on Hard Fault.

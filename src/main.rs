@@ -4,10 +4,10 @@
 #![no_std]
 
 extern crate blink_nucleo;
-extern crate drone_stm32;
+extern crate drone_cortex_m;
 
 use blink_nucleo::{main, VectorTable};
-use drone_stm32::mcu;
+use drone_cortex_m::mcu;
 
 #[no_mangle]
 pub static VECTOR_TABLE: VectorTable = VectorTable::new(reset);
