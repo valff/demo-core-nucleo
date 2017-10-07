@@ -5,7 +5,7 @@ authors = ["Valentine Valyaeff <valentine.valyaeff@gmail.com>"]
 description = "Example program for STM32 Nucleo using Drone RTOS."
 readme = "README.md"
 license = "MIT/Apache-2.0"
-repository = "https://github.com/valff/blink-nucleo"
+repository = "https://github.com/drone-os/blink-nucleo"
 
 [dependencies.drone]
 version = "0.5"
@@ -23,7 +23,7 @@ optional = true
 [dev-dependencies.test]
 version = "0.2"
 features = []
-# git = "https://github.com/valff/drone-test"
+# git = "https://github.com/drone-os/drone-test"
 path = "../drone-test"
 
 [[bin]]

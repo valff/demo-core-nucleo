@@ -21,7 +21,7 @@
 //! $ cargo drone server --itm
 //! ```
 //!
-//! [Drone]: https://github.com/valff/drone
+//! [Drone]: https://github.com/drone-os/drone
 //! [NUCLEO-L496ZG-P]:
 //! http://www.st.com/en/evaluation-tools/nucleo-l496zg-p.html
 #![feature(alloc)]
