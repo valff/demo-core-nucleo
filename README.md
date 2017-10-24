@@ -5,6 +5,7 @@ Example blinking program for [NUCLEO-L496ZG-P] board based on [Drone].
 ## Effects
 
 * Smooth blinking with the all three user LEDs.
+* Responding to the on-board button.
 * Running MCU at the full speed (80 MHz).
 * Using the on-board LSE for MSI auto-calibration.
 * Printing messages through ITM.

@@ -1,5 +1,6 @@
-//! The vector table to interrupt service routines.
+//! Interrupt-driven threads.
 
+use drone::thread::thread_local;
 use drone_cortex_m::vtable;
 
 vtable! {
@@ -13,4 +14,10 @@ vtable! {
   sys_tick;
   /// RCC global interrupt.
   5: rcc;
+  /// EXTI Line[15:10] interrupts.
+  40: exti15_10;
+}
+
+thread_local! {
+  //! An interrupt-driven thread.
 }
