@@ -49,17 +49,6 @@ version = "0.9.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
-name = "blink-nucleo"
-version = "0.1.0"
-dependencies = [
- "clippy 0.0.177 (registry+https://github.com/rust-lang/crates.io-index)",
- "drone-core 0.7.0",
- "drone-cortex-m 0.7.0",
- "futures 0.1.17 (registry+https://github.com/rust-lang/crates.io-index)",
- "test 0.2.3",
-]
-
-[[package]]
 name = "cargo_metadata"
 version = "0.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -300,6 +289,17 @@ version = "2.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "libc 0.2.34 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "nucleo-demo"
+version = "0.1.0"
+dependencies = [
+ "clippy 0.0.177 (registry+https://github.com/rust-lang/crates.io-index)",
+ "drone-core 0.7.0",
+ "drone-cortex-m 0.7.0",
+ "futures 0.1.17 (registry+https://github.com/rust-lang/crates.io-index)",
+ "test 0.2.3",
 ]
 
 [[package]]

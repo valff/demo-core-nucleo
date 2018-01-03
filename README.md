@@ -1,4 +1,4 @@
-# blink-nucleo
+# nucleo-demo
 
 Example blinking program for [NUCLEO-L496ZG-P] board based on [Drone].
 
