@@ -1,24 +1,39 @@
 #![feature(const_fn)]
-#![feature(naked_functions)]
 #![no_main]
 #![no_std]
 
 extern crate blink_nucleo;
+extern crate drone_core;
 extern crate drone_cortex_m;
 
-use blink_nucleo::{main, VectorTable};
-use drone_cortex_m::mcu;
+use blink_nucleo::{origin, ALLOC};
+use blink_nucleo::thread::{ThreadIndex, ThreadLocal, VectorTable};
+use drone_core::{mem, thread};
+use drone_core::heap::Allocator;
+use drone_core::reg::RegTokens;
+use drone_core::thread::ThreadTokens;
+use drone_cortex_m::{itm, mcu};
+use drone_cortex_m::reg::RegIndex;
+
+extern "C" {
+  static mut BSS_START: usize;
+  static BSS_END: usize;
+  static mut DATA_START: usize;
+  static DATA_END: usize;
+  static DATA_CONST: usize;
+  static mut HEAP_START: usize;
+}
 
 #[no_mangle]
 pub static VECTOR_TABLE: VectorTable = VectorTable::new(reset);
 
-#[naked]
 unsafe extern "C" fn reset() -> ! {
-  #[inline(never)]
-  fn handler() {
-    main()
-  }
-  handler();
+  mem::bss_init(&mut BSS_START, &BSS_END);
+  mem::data_init(&mut DATA_START, &DATA_END, &DATA_CONST);
+  ALLOC.init(&mut HEAP_START);
+  thread::init::<ThreadLocal>();
+  itm::init();
+  origin(ThreadIndex::new(), RegIndex::new());
   loop {
     mcu::wait_for_interrupt();
   }

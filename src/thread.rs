@@ -1,23 +1,31 @@
 //! Interrupt-driven threads.
 
-use drone::thread::thread_local;
+use drone_core::thread::thread_local;
 use drone_cortex_m::vtable;
 
 vtable! {
-  //! The vector table.
+  /// The vector table.
+  VectorTable;
+  /// Thread bindings.
+  ThreadIndex;
+  /// Array of threads.
+  THREADS;
+  ThreadLocal;
 
   /// Non maskable interrupt.
-  nmi;
+  NMI;
   /// All classes of fault.
-  hard_fault;
+  HARD_FAULT;
   /// System tick timer.
-  sys_tick;
+  SYS_TICK;
   /// RCC global interrupt.
-  5: rcc;
+  5: RCC;
   /// EXTI Line[15:10] interrupts.
-  40: exti15_10;
+  40: EXTI15_10;
 }
 
 thread_local! {
-  //! An interrupt-driven thread.
+  /// An interrupt-driven thread.
+  ThreadLocal;
+  THREADS;
 }

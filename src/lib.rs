@@ -25,6 +25,7 @@
 //! [Drone]: https://github.com/drone-os/drone
 //! [NUCLEO-L496ZG-P]:
 //! http://www.st.com/en/evaluation-tools/nucleo-l496zg-p.html
+
 #![feature(alloc)]
 #![feature(allocator_api)]
 #![feature(allocator_internals)]
@@ -51,7 +52,8 @@
 
 extern crate alloc;
 extern crate compiler_builtins;
-extern crate drone;
+#[macro_use]
+extern crate drone_core;
 #[macro_use]
 extern crate drone_cortex_m;
 extern crate futures;
@@ -60,14 +62,13 @@ extern crate futures;
 extern crate test;
 
 pub mod consts;
-pub mod thread;
 pub mod heap;
-pub mod reset;
+pub mod origin;
+pub mod thread;
 
 pub use heap::ALLOC;
-pub use reset::main;
-pub use thread::VectorTable;
+pub use origin::origin;
 
 #[prelude_import]
 #[allow(unused_imports)]
-use drone::prelude::*;
+use drone_cortex_m::prelude::*;

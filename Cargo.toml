@@ -7,12 +7,14 @@ readme = "README.md"
 license = "MIT/Apache-2.0"
 repository = "https://github.com/drone-os/blink-nucleo"
 
-[dependencies.drone]
-version = "0.6"
+[dependencies.drone-core]
+version = "0.7"
+path = "../drone-core"
 
 [dependencies.drone-cortex-m]
-version = "0.6"
+version = "0.7"
 features = ["stm32l4x6"]
+path = "../drone-cortex-m"
 
 [dependencies.futures]
 version = "0.1"
@@ -25,7 +27,8 @@ optional = true
 [dev-dependencies.test]
 version = "0.2"
 features = []
-git = "https://github.com/drone-os/drone-test"
+# git = "https://github.com/drone-os/drone-test"
+path = "../drone-test"
 
 [[bin]]
 name = "blink-nucleo"
