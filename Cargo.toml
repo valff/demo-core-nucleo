@@ -1,18 +1,20 @@
 [package]
-name = "blink-nucleo"
+name = "nucleo-demo"
 version = "0.1.0"
 authors = ["Valentine Valyaeff <valentine.valyaeff@gmail.com>"]
 description = "Example program for STM32 Nucleo using Drone RTOS."
 readme = "README.md"
 license = "MIT/Apache-2.0"
-repository = "https://github.com/drone-os/blink-nucleo"
+repository = "https://github.com/drone-os/nucleo-demo"
 
-[dependencies.drone]
-version = "0.6"
+[dependencies.drone-core]
+version = "0.7"
+path = "../drone-core"
 
 [dependencies.drone-cortex-m]
-version = "0.6"
+version = "0.7"
 features = ["stm32l4x6"]
+path = "../drone-cortex-m"
 
 [dependencies.futures]
 version = "0.1"
@@ -28,7 +30,7 @@ features = []
 git = "https://github.com/drone-os/drone-test"
 
 [[bin]]
-name = "blink-nucleo"
+name = "nucleo-demo"
 path = "src/main.rs"
 test = false
 doc = false
