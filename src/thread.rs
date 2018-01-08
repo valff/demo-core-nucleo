@@ -18,6 +18,10 @@ vtable! {
   HARD_FAULT;
   /// System tick timer.
   SYS_TICK;
+  /// LED reactor.
+  0: LED;
+  /// Button reactor.
+  1: BUTTON;
   /// RCC global interrupt.
   5: RCC;
   /// EXTI Line[15:10] interrupts.

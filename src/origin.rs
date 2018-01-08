@@ -7,7 +7,7 @@ use drone_cortex_m::peripherals::exti::{ExtiLn, ExtiLn13, ExtiLnConf,
                                         ExtiLnExt};
 use drone_cortex_m::peripherals::gpio::{GpioPin, Gpiob14, Gpiob7, Gpioc13,
                                         Gpioc7};
-use drone_cortex_m::peripherals::timer::Timer;
+use drone_cortex_m::peripherals::timer::{SysTick, Timer};
 use drone_cortex_m::reg::{flash, nvic, pwr, rcc, RegIndex};
 use drone_cortex_m::reg::prelude::*;
 use drone_cortex_m::thread::prelude::*;
@@ -18,7 +18,7 @@ static DEBOUNCE: AtomicU32 = AtomicU32::new(0);
 
 /// The entry point.
 pub fn origin(thrd: ThreadIndex, regs: RegIndex) {
-  let mut sys_tick = peripheral_sys_tick!(thrd, regs);
+  let sys_tick = peripheral_sys_tick!(thrd, regs);
   let gpiob14 = peripheral_gpiob_14!(regs);
   let gpiob7 = peripheral_gpiob_7!(regs);
   let gpioc13 = peripheral_gpioc_13!(regs);
@@ -26,6 +26,7 @@ pub fn origin(thrd: ThreadIndex, regs: RegIndex) {
   let exti13 = peripheral_exti_ln_13!(thrd, regs);
 
   let RegIndex {
+    nvic_iser0,
     nvic_iser1,
     rcc_ahb2enr,
     rcc_apb2enr,
@@ -36,11 +37,12 @@ pub fn origin(thrd: ThreadIndex, regs: RegIndex) {
   thrd.hard_fault.routine_fn(|| panic!("Hard Fault"));
 
   // Configure maximum processor clock frequency of 80MHz.
+  let mut nvic_iser0 = nvic_iser0.into();
   let init = hclk_init(
     thrd.nmi,
     thrd.rcc,
     regs.flash_acr.into(),
-    &mut regs.nvic_iser0.into(),
+    &mut nvic_iser0,
     &mut regs.pwr_cr1.into(),
     &mut regs.rcc_apb1enr1.into(),
     &mut regs.rcc_bdcr.into(),
@@ -54,6 +56,12 @@ pub fn origin(thrd: ThreadIndex, regs: RegIndex) {
 
   let init = AsyncFuture::new(move || {
     await!(init)?;
+    nvic_iser0.modify(|r| {
+      let mut setena = r.setena();
+      setena |= 1 << thread::Led::IRQ_NUMBER;
+      setena |= 1 << thread::Button::IRQ_NUMBER;
+      r.write_setena(setena)
+    });
     // Configure push-button and LED pins.
     peripheral_init(
       &gpiob14,
@@ -65,19 +73,14 @@ pub fn origin(thrd: ThreadIndex, regs: RegIndex) {
       &mut rcc_ahb2enr.into(),
       &mut rcc_apb2enr.into(),
     );
-    // Setup LED blink routine.
-    led_routine(thrd.sys_tick, gpiob14, gpiob7, gpioc7);
     // Setup push-button routine.
-    button_routine(exti13, thrd.sys_tick);
-    // Setup SysTick timer.
-    let ctrl = sys_tick.ctrl().default().val();
-    let stream = sys_tick.interval(SYS_TICK_SEC / 15_000, ctrl);
-    Ok::<_, ()>(stream)
+    thrd.button.exec(button_future(exti13, thrd.sys_tick));
+    // Setup LED blink routine.
+    thrd.led.exec(led_future(sys_tick, gpiob14, gpiob7, gpioc7));
+    Ok::<(), !>(())
   });
 
-  if let Ok(stream) = init.wait() {
-    for _ in stream.wait() {}
-  }
+  init.wait().ok();
 
   // Do not return to the reset handler from interrupts.
   regs.scb_scr.modify(|r| r.set_sleeponexit());
@@ -98,7 +101,7 @@ fn hclk_init(
   mut rcc_cifr: rcc::Cifr<Ftt>,
   rcc_cr: &mut rcc::Cr<Utt>,
   rcc_pllcfgr: &mut rcc::Pllcfgr<Utt>,
-) -> impl Future<Item = (), Error = ()> {
+) -> impl Future<Item = (), Error = !> {
   // Enable on-board LSE crystal.
   rcc_apb1enr1.modify(|r| r.set_pwren());
   pwr_cr1.modify(|r| r.set_dbp());
@@ -145,7 +148,7 @@ fn peripheral_init(
 ) {
   nvic_iser1.modify(|r| {
     let setena = r.setena();
-    r.write_setena(setena | 1 << thread::Exti1510::INTERRUPT_NUMBER - 32)
+    r.write_setena(setena | 1 << thread::Exti1510::IRQ_NUMBER - 32)
   });
   rcc_apb2enr.modify(|r| r.set_syscfgen());
   rcc_ahb2enr.modify(|r| r.set_gpioben().set_gpiocen());
@@ -173,12 +176,12 @@ fn peripheral_init(
   gpioc13.pupdr().write_bits(0b10);
 }
 
-fn led_routine(
-  sys_tick: ThreadToken<ThreadLocal, thread::SysTick>,
+fn led_future(
+  mut sys_tick: SysTick<ThreadLocal, thread::SysTick>,
   gpiob14: Gpiob14<Stt>,
   gpiob7: Gpiob7<Stt>,
   gpioc7: Gpioc7<Stt>,
-) {
+) -> impl Future<Item = (), Error = !> {
   const WIDTH: u32 = 6;
   const STEP: u32 = (1 << WIDTH) * 2 / 3;
   let mut counter = 0;
@@ -191,48 +194,46 @@ fn led_routine(
     pivot & ((1 << WIDTH + 1) - 1)
   }
 
-  sys_tick.routine(move || loop {
-    if counter & ((1 << 14) - 1) == 0 {
-      println!("Counter: {}", counter);
-    }
-    let cycle = counter & ((1 << WIDTH) - 1);
-    if cycle == 0 {
-      gpiob7.bsrr_br().reset(|r| {
-        gpiob7.bsrr_br().set(r);
-        gpiob14.bsrr_br().set(r);
-      });
-      gpioc7.bsrr_br().set_bit();
-    }
-    if cycle == pivot(counter, 0) {
-      gpiob14.bsrr_bs().set_bit();
-    }
-    if cycle == pivot(counter, STEP) {
-      gpiob7.bsrr_bs().set_bit();
-    }
-    if cycle == pivot(counter, STEP << 1) {
-      gpioc7.bsrr_bs().set_bit();
-    }
-    counter = if FAST.load(Relaxed) {
-      counter.wrapping_add(0b100) & !0b011
-    } else {
-      counter.wrapping_add(0b001)
-    };
-    yield;
-  });
+  // Setup SysTick timer.
+  let ctrl = sys_tick.ctrl().default().val();
+  let stream = sys_tick.interval_skip(SYS_TICK_SEC / 15_000, ctrl);
+  AsyncFuture::new(move || {
+    await_for!(() in stream; {
+      if counter & ((1 << 14) - 1) == 0 {
+        println!("Counter: {}", counter);
+      }
+      let cycle = counter & ((1 << WIDTH) - 1);
+      if cycle == 0 {
+        gpiob7.bsrr_br().reset(|r| {
+          gpiob7.bsrr_br().set(r);
+          gpiob14.bsrr_br().set(r);
+        });
+        gpioc7.bsrr_br().set_bit();
+      }
+      if cycle == pivot(counter, 0) {
+        gpiob14.bsrr_bs().set_bit();
+      }
+      if cycle == pivot(counter, STEP) {
+        gpiob7.bsrr_bs().set_bit();
+      }
+      if cycle == pivot(counter, STEP << 1) {
+        gpioc7.bsrr_bs().set_bit();
+      }
+      counter = if FAST.load(Relaxed) {
+        counter.wrapping_add(0b100) & !0b011
+      } else {
+        counter.wrapping_add(0b001)
+      };
+    });
+    Ok(())
+  })
 }
 
-fn button_routine(
-  exti13: ExtiLn13<ThreadLocal, thread::Exti1510>,
+fn button_future(
+  mut exti13: ExtiLn13<ThreadLocal, thread::Exti1510>,
   sys_tick: ThreadToken<ThreadLocal, thread::SysTick>,
-) {
+) -> impl Future<Item = (), Error = !> {
   const DEBOUNCE_INTERVAL: u32 = 2000;
-
-  on_exti13(exti13, || {
-    if DEBOUNCE.load(Relaxed) == 0 {
-      FAST.store(!FAST.load(Relaxed), Relaxed);
-      DEBOUNCE.store(DEBOUNCE_INTERVAL, Relaxed);
-    }
-  });
 
   sys_tick.routine(|| loop {
     let debounce = DEBOUNCE.load(Relaxed);
@@ -241,19 +242,17 @@ fn button_routine(
     }
     yield;
   });
-}
 
-fn on_exti13<F>(exti13: ExtiLn13<ThreadLocal, thread::Exti1510>, f: F)
-where
-  F: Fn() + Send + 'static,
-{
-  exti13.irq().routine(move || loop {
-    if exti13.pr().read_bit_band() {
-      exti13.pr().set_bit_band();
-      f();
-    }
-    yield;
-  });
+  let stream = exti13.stream_skip();
+  AsyncFuture::new(move || {
+    await_for!(() in stream; {
+      if DEBOUNCE.load(Relaxed) == 0 {
+        FAST.store(!FAST.load(Relaxed), Relaxed);
+        DEBOUNCE.store(DEBOUNCE_INTERVAL, Relaxed);
+      }
+    });
+    Ok(())
+  })
 }
 
 fn lse_css_failure<F>(
@@ -280,10 +279,10 @@ fn pll_on(
   rcc_cier: &mut rcc::Cier<Utt>,
   rcc_cifr: rcc::Cifr<Ftt>,
   rcc_cr: &mut rcc::Cr<Utt>,
-) -> impl Future<Item = (), Error = ()> {
+) -> impl Future<Item = (), Error = !> {
   nvic_iser0.modify(|r| {
     let setena = r.setena();
-    r.write_setena(setena | 1 << thread::Rcc::INTERRUPT_NUMBER)
+    r.write_setena(setena | 1 << thread::Rcc::IRQ_NUMBER)
   });
   rcc_cier.modify(|r| r.set_pllrdyie());
   let ready = rcc.future(move || loop {

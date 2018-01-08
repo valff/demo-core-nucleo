@@ -40,6 +40,7 @@
 #![feature(global_allocator)]
 #![feature(integer_atomics)]
 #![feature(naked_functions)]
+#![feature(never_type)]
 #![feature(prelude_import)]
 #![feature(proc_macro)]
 #![feature(slice_get_slice)]
@@ -49,6 +50,7 @@
 #![cfg_attr(feature = "clippy", feature(plugin))]
 #![cfg_attr(feature = "clippy", plugin(clippy))]
 #![cfg_attr(feature = "clippy", allow(precedence, doc_markdown))]
+#![cfg_attr(feature = "clippy", allow(diverging_sub_expression))]
 
 extern crate alloc;
 extern crate compiler_builtins;
