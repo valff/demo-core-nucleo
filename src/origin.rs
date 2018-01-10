@@ -8,26 +8,25 @@ use drone_cortex_m::peripherals::exti::{ExtiLn, ExtiLn13, ExtiLnConf,
 use drone_cortex_m::peripherals::gpio::{GpioPin, Gpiob14, Gpiob7, Gpioc13,
                                         Gpioc7};
 use drone_cortex_m::peripherals::timer::{SysTick, Timer};
-use drone_cortex_m::reg::{flash, nvic, pwr, rcc, RegIndex};
+use drone_cortex_m::reg::{self, RegIndex};
 use drone_cortex_m::reg::prelude::*;
 use drone_cortex_m::thread::prelude::*;
-use thread::{self, ThreadIndex, ThreadLocal};
+use thread::{self, ThreadIndex};
 
 static FAST: AtomicBool = AtomicBool::new(false);
 static DEBOUNCE: AtomicU32 = AtomicU32::new(0);
 
 /// The entry point.
-pub fn origin(thrd: ThreadIndex, regs: RegIndex) {
-  let sys_tick = peripheral_sys_tick!(thrd, regs);
+pub fn origin(regs: RegIndex) {
+  let thrd = ThreadIndex::new(peripheral_nvic!(regs));
+  let sys_tick = peripheral_sys_tick!(regs, thrd);
   let gpiob14 = peripheral_gpiob_14!(regs);
   let gpiob7 = peripheral_gpiob_7!(regs);
   let gpioc13 = peripheral_gpioc_13!(regs);
   let gpioc7 = peripheral_gpioc_7!(regs);
-  let exti13 = peripheral_exti_ln_13!(thrd, regs);
+  let exti13 = peripheral_exti_ln_13!(regs, thrd);
 
   let RegIndex {
-    nvic_iser0,
-    nvic_iser1,
     rcc_ahb2enr,
     rcc_apb2enr,
     ..
@@ -37,12 +36,10 @@ pub fn origin(thrd: ThreadIndex, regs: RegIndex) {
   thrd.hard_fault.routine_fn(|| panic!("Hard Fault"));
 
   // Configure maximum processor clock frequency of 80MHz.
-  let mut nvic_iser0 = nvic_iser0.into();
   let init = hclk_init(
-    thrd.nmi,
+    thrd.nmi.into(),
     thrd.rcc,
     regs.flash_acr.into(),
-    &mut nvic_iser0,
     &mut regs.pwr_cr1.into(),
     &mut regs.rcc_apb1enr1.into(),
     &mut regs.rcc_bdcr.into(),
@@ -56,12 +53,11 @@ pub fn origin(thrd: ThreadIndex, regs: RegIndex) {
 
   let init = AsyncFuture::new(move || {
     await!(init)?;
-    nvic_iser0.modify(|r| {
-      let mut setena = r.setena();
-      setena |= 1 << thread::Led::IRQ_NUMBER;
-      setena |= 1 << thread::Button::IRQ_NUMBER;
-      r.write_setena(setena)
+    thrd.led.enable_batch(|r| {
+      thrd.led.enable(r);
+      thrd.button.enable(r);
     });
+    thrd.exti15_10.enable_irq();
     // Configure push-button and LED pins.
     peripheral_init(
       &gpiob14,
@@ -69,12 +65,13 @@ pub fn origin(thrd: ThreadIndex, regs: RegIndex) {
       &gpioc13,
       &gpioc7,
       &exti13,
-      &mut nvic_iser1.into(),
       &mut rcc_ahb2enr.into(),
       &mut rcc_apb2enr.into(),
     );
     // Setup push-button routine.
-    thrd.button.exec(button_future(exti13, thrd.sys_tick));
+    thrd
+      .button
+      .exec(button_future(exti13, thrd.sys_tick.into()));
     // Setup LED blink routine.
     thrd.led.exec(led_future(sys_tick, gpiob14, gpiob7, gpioc7));
     Ok::<(), !>(())
@@ -88,19 +85,18 @@ pub fn origin(thrd: ThreadIndex, regs: RegIndex) {
 
 #[cfg_attr(feature = "clippy", allow(too_many_arguments))]
 fn hclk_init(
-  nmi: ThreadToken<ThreadLocal, thread::Nmi>,
-  rcc: ThreadToken<ThreadLocal, thread::Rcc>,
-  mut flash_acr: flash::Acr<Utt>,
-  nvic_iser0: &mut nvic::Iser0<Utt>,
-  pwr_cr1: &mut pwr::Cr1<Utt>,
-  rcc_apb1enr1: &mut rcc::Apb1Enr1<Utt>,
-  rcc_bdcr: &mut rcc::Bdcr<Utt>,
-  mut rcc_cfgr: rcc::Cfgr<Utt>,
-  mut rcc_cicr: rcc::Cicr<Ftt>,
-  rcc_cier: &mut rcc::Cier<Utt>,
-  mut rcc_cifr: rcc::Cifr<Ftt>,
-  rcc_cr: &mut rcc::Cr<Utt>,
-  rcc_pllcfgr: &mut rcc::Pllcfgr<Utt>,
+  nmi: thread::Nmi<Ltt>,
+  rcc: thread::Rcc<Ctt>,
+  mut flash_acr: reg::flash::Acr<Urt>,
+  pwr_cr1: &mut reg::pwr::Cr1<Urt>,
+  rcc_apb1enr1: &mut reg::rcc::Apb1Enr1<Urt>,
+  rcc_bdcr: &mut reg::rcc::Bdcr<Urt>,
+  mut rcc_cfgr: reg::rcc::Cfgr<Urt>,
+  mut rcc_cicr: reg::rcc::Cicr<Frt>,
+  rcc_cier: &mut reg::rcc::Cier<Urt>,
+  mut rcc_cifr: reg::rcc::Cifr<Frt>,
+  rcc_cr: &mut reg::rcc::Cr<Urt>,
+  rcc_pllcfgr: &mut reg::rcc::Pllcfgr<Urt>,
 ) -> impl Future<Item = (), Error = !> {
   // Enable on-board LSE crystal.
   rcc_apb1enr1.modify(|r| r.set_pwren());
@@ -125,9 +121,7 @@ fn hclk_init(
       .write_plln(PLL_OUTPUT_FACTOR)
   });
 
-  let pll_on = pll_on(rcc, nvic_iser0, rcc_cicr, rcc_cier, rcc_cifr, rcc_cr);
-  AsyncFuture::new(move || {
-    await!(pll_on)?;
+  pll_on(rcc, rcc_cicr, rcc_cier, rcc_cifr, rcc_cr).and_then(move |()| {
     // Setup flash to use at maximum performance.
     flash_acr.modify(|r| r.set_prften().set_icen().set_dcen().write_latency(2));
     rcc_cfgr.modify(|r| r.write_sw(0b11));
@@ -137,19 +131,14 @@ fn hclk_init(
 
 #[cfg_attr(feature = "clippy", allow(too_many_arguments))]
 fn peripheral_init(
-  gpiob14: &Gpiob14<Stt>,
-  gpiob7: &Gpiob7<Stt>,
-  gpioc13: &Gpioc13<Stt>,
-  gpioc7: &Gpioc7<Stt>,
-  exti13: &ExtiLn13<ThreadLocal, thread::Exti1510>,
-  nvic_iser1: &mut nvic::Iser1<Utt>,
-  rcc_ahb2enr: &mut rcc::Ahb2Enr<Utt>,
-  rcc_apb2enr: &mut rcc::Apb2Enr<Utt>,
+  gpiob14: &Gpiob14<Srt>,
+  gpiob7: &Gpiob7<Srt>,
+  gpioc13: &Gpioc13<Srt>,
+  gpioc7: &Gpioc7<Srt>,
+  exti13: &ExtiLn13<thread::Exti1510<Ltt>>,
+  rcc_ahb2enr: &mut reg::rcc::Ahb2Enr<Urt>,
+  rcc_apb2enr: &mut reg::rcc::Apb2Enr<Urt>,
 ) {
-  nvic_iser1.modify(|r| {
-    let setena = r.setena();
-    r.write_setena(setena | 1 << thread::Exti1510::IRQ_NUMBER - 32)
-  });
   rcc_apb2enr.modify(|r| r.set_syscfgen());
   rcc_ahb2enr.modify(|r| r.set_gpioben().set_gpiocen());
   exti13.exticr().write_bits(0b0010);
@@ -177,10 +166,10 @@ fn peripheral_init(
 }
 
 fn led_future(
-  mut sys_tick: SysTick<ThreadLocal, thread::SysTick>,
-  gpiob14: Gpiob14<Stt>,
-  gpiob7: Gpiob7<Stt>,
-  gpioc7: Gpioc7<Stt>,
+  mut sys_tick: SysTick<thread::SysTick<Ltt>>,
+  gpiob14: Gpiob14<Srt>,
+  gpiob7: Gpiob7<Srt>,
+  gpioc7: Gpioc7<Srt>,
 ) -> impl Future<Item = (), Error = !> {
   const WIDTH: u32 = 6;
   const STEP: u32 = (1 << WIDTH) * 2 / 3;
@@ -230,8 +219,8 @@ fn led_future(
 }
 
 fn button_future(
-  mut exti13: ExtiLn13<ThreadLocal, thread::Exti1510>,
-  sys_tick: ThreadToken<ThreadLocal, thread::SysTick>,
+  mut exti13: ExtiLn13<thread::Exti1510<Ltt>>,
+  sys_tick: thread::SysTick<Ltt>,
 ) -> impl Future<Item = (), Error = !> {
   const DEBOUNCE_INTERVAL: u32 = 2000;
 
@@ -256,9 +245,9 @@ fn button_future(
 }
 
 fn lse_css_failure<F>(
-  nmi: ThreadToken<ThreadLocal, thread::Nmi>,
-  rcc_cicr: rcc::Cicr<Ftt>,
-  rcc_cifr: rcc::Cifr<Ftt>,
+  nmi: thread::Nmi<Ltt>,
+  rcc_cicr: reg::rcc::Cicr<Frt>,
+  rcc_cifr: reg::rcc::Cifr<Frt>,
   f: F,
 ) where
   F: FnOnce() + Send + 'static,
@@ -273,17 +262,13 @@ fn lse_css_failure<F>(
 }
 
 fn pll_on(
-  rcc: ThreadToken<ThreadLocal, thread::Rcc>,
-  nvic_iser0: &mut nvic::Iser0<Utt>,
-  rcc_cicr: rcc::Cicr<Ftt>,
-  rcc_cier: &mut rcc::Cier<Utt>,
-  rcc_cifr: rcc::Cifr<Ftt>,
-  rcc_cr: &mut rcc::Cr<Utt>,
+  rcc: thread::Rcc<Ctt>,
+  rcc_cicr: reg::rcc::Cicr<Frt>,
+  rcc_cier: &mut reg::rcc::Cier<Urt>,
+  rcc_cifr: reg::rcc::Cifr<Frt>,
+  rcc_cr: &mut reg::rcc::Cr<Urt>,
 ) -> impl Future<Item = (), Error = !> {
-  nvic_iser0.modify(|r| {
-    let setena = r.setena();
-    r.write_setena(setena | 1 << thread::Rcc::IRQ_NUMBER)
-  });
+  rcc.enable_irq();
   rcc_cier.modify(|r| r.set_pllrdyie());
   let ready = rcc.future(move || loop {
     if rcc_cifr.load().pllrdyf() {
