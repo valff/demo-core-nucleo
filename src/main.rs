@@ -2,16 +2,16 @@
 #![no_main]
 #![no_std]
 
+extern crate demo_core_nucleo;
 extern crate drone_core;
 extern crate drone_cortex_m;
-extern crate nucleo_demo;
 
+use demo_core_nucleo::{origin, ALLOC};
+use demo_core_nucleo::thread::{ThreadLocal, VectorTable};
 use drone_core::{mem, thread};
 use drone_core::heap::Allocator;
 use drone_core::origin::OriginToken;
 use drone_cortex_m::{itm, mcu};
-use nucleo_demo::{origin, ALLOC};
-use nucleo_demo::thread::{ThreadLocal, VectorTable};
 
 extern "C" {
   static mut BSS_START: usize;

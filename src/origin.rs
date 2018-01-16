@@ -4,7 +4,7 @@ use consts::{PLLCLK_FACTOR, PLL_INPUT_FACTOR, PLL_OUTPUT_FACTOR, SYS_TICK_SEC};
 use core::sync::atomic::{AtomicBool, AtomicU32};
 use core::sync::atomic::Ordering::*;
 use drone_core::origin::OriginToken;
-use drone_core::peripheral::Peripheral;
+use drone_core::peripheral::PeripheralDevice;
 use drone_cortex_m::peripherals::exti::ExtiLn13;
 use drone_cortex_m::peripherals::gpio::{GpioPin, Gpiob14, Gpiob7, Gpioc13,
                                         Gpioc7};

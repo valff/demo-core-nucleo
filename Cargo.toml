@@ -1,11 +1,11 @@
 [package]
-name = "nucleo-demo"
+name = "demo-core-nucleo"
 version = "0.1.0"
 authors = ["Valentine Valyaeff <valentine.valyaeff@gmail.com>"]
 description = "Example program for STM32 Nucleo using Drone RTOS."
 readme = "README.md"
 license = "MIT/Apache-2.0"
-repository = "https://github.com/drone-os/nucleo-demo"
+repository = "https://github.com/drone-os/demo-core-nucleo"
 
 [dependencies.drone-core]
 version = "0.8"
@@ -31,7 +31,7 @@ features = []
 path = "../drone-test"
 
 [[bin]]
-name = "nucleo-demo"
+name = "demo-core-nucleo"
 path = "src/main.rs"
 test = false
 doc = false
