@@ -3,8 +3,9 @@
 use consts::{PLLCLK_FACTOR, PLL_INPUT_FACTOR, PLL_OUTPUT_FACTOR, SYS_TICK_SEC};
 use core::sync::atomic::{AtomicBool, AtomicU32};
 use core::sync::atomic::Ordering::*;
-use drone_cortex_m::peripherals::exti::{ExtiLn, ExtiLn13, ExtiLnConf,
-                                        ExtiLnExt};
+use drone_core::origin::OriginToken;
+use drone_core::peripheral::Peripheral;
+use drone_cortex_m::peripherals::exti::ExtiLn13;
 use drone_cortex_m::peripherals::gpio::{GpioPin, Gpiob14, Gpiob7, Gpioc13,
                                         Gpioc7};
 use drone_cortex_m::peripherals::timer::{SysTick, Timer};
@@ -17,7 +18,8 @@ static FAST: AtomicBool = AtomicBool::new(false);
 static DEBOUNCE: AtomicU32 = AtomicU32::new(0);
 
 /// The entry point.
-pub fn origin(regs: RegIndex) {
+pub fn origin(origin: OriginToken) {
+  let regs = RegIndex::new(origin);
   let thrd = ThreadIndex::new(peripheral_nvic!(regs));
   let sys_tick = peripheral_sys_tick!(regs, thrd);
   let gpiob14 = peripheral_gpiob_14!(regs);
@@ -141,9 +143,9 @@ fn peripheral_init(
 ) {
   rcc_apb2enr.modify(|r| r.set_syscfgen());
   rcc_ahb2enr.modify(|r| r.set_gpioben().set_gpiocen());
-  exti13.exticr().write_bits(0b0010);
-  exti13.imr().set_bit();
-  exti13.rtsr().set_bit();
+  exti13.exticr_exti().write_bits(0b0010);
+  exti13.imr_mr().set_bit();
+  exti13.rtsr_rt().set_bit();
   gpiob7.moder().modify(|r| {
     gpiob7.moder().write(r, 0b01);
     gpiob14.moder().write(r, 0b01);

@@ -8,9 +8,8 @@ extern crate nucleo_demo;
 
 use drone_core::{mem, thread};
 use drone_core::heap::Allocator;
-use drone_core::reg::RegTokens;
+use drone_core::origin::OriginToken;
 use drone_cortex_m::{itm, mcu};
-use drone_cortex_m::reg::RegIndex;
 use nucleo_demo::{origin, ALLOC};
 use nucleo_demo::thread::{ThreadLocal, VectorTable};
 
@@ -32,7 +31,7 @@ unsafe extern "C" fn reset() -> ! {
   ALLOC.init(&mut HEAP_START);
   thread::init::<ThreadLocal>();
   itm::init();
-  origin(RegIndex::new());
+  origin(OriginToken::new());
   loop {
     mcu::wait_for_interrupt();
   }
