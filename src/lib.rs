@@ -49,7 +49,7 @@
 #![warn(missing_docs)]
 #![cfg_attr(feature = "clippy", feature(plugin))]
 #![cfg_attr(feature = "clippy", plugin(clippy))]
-#![cfg_attr(feature = "clippy", allow(precedence))]
+#![cfg_attr(feature = "clippy", allow(precedence, inline_always))]
 #![cfg_attr(feature = "clippy", allow(diverging_sub_expression))]
 
 extern crate alloc;
@@ -62,6 +62,9 @@ extern crate futures;
 #[cfg(test)]
 #[macro_use]
 extern crate test;
+
+#[macro_use]
+pub mod peripherals;
 
 pub mod consts;
 pub mod heap;

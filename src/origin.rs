@@ -1,6 +1,6 @@
 //! The entry point.
 
-use consts::{PLLCLK_FACTOR, PLL_INPUT_FACTOR, PLL_OUTPUT_FACTOR, SYS_TICK_SEC};
+use consts::SYS_TICK_SEC;
 use core::sync::atomic::{AtomicBool, AtomicU32};
 use core::sync::atomic::Ordering::*;
 use drone_core::origin::OriginToken;
@@ -21,6 +21,9 @@ static DEBOUNCE: AtomicU32 = AtomicU32::new(0);
 pub fn origin(origin: OriginToken) {
   let regs = RegIndex::new(origin);
   let thrd = ThreadIndex::new(peripheral_nvic!(regs));
+  let rcc = peripheral_rcc!(regs, thrd);
+  let rcc_pll = peripheral_rcc_pll!(regs, thrd);
+  let mut rcc_css = peripheral_rcc_css!(regs, thrd);
   let sys_tick = peripheral_sys_tick!(regs, thrd);
   let gpiob14 = peripheral_gpiob_14!(regs);
   let gpiob7 = peripheral_gpiob_7!(regs);
@@ -37,24 +40,12 @@ pub fn origin(origin: OriginToken) {
   // Panic on Hard Fault.
   thrd.hard_fault.routine_fn(|| panic!("Hard Fault"));
 
-  // Configure maximum processor clock frequency of 80MHz.
-  let init = hclk_init(
-    thrd.nmi.into(),
-    thrd.rcc,
-    regs.flash_acr.into(),
-    &mut regs.pwr_cr1.into(),
-    &mut regs.rcc_apb1enr1.into(),
-    &mut regs.rcc_bdcr.into(),
-    regs.rcc_cfgr.into(),
-    regs.rcc_cicr.into(),
-    &mut regs.rcc_cier.into(),
-    regs.rcc_cifr.into(),
-    &mut regs.rcc_cr.into(),
-    &mut regs.rcc_pllcfgr.into(),
-  );
+  // Panic on LSE failure.
+  rcc_css.lse_init();
+  rcc_css.on_lse(|| panic!("LSE clock failure"));
 
-  let init = AsyncFuture::new(move || {
-    await!(init)?;
+  thrd.rcc.enable_irq();
+  let setup = rcc.lse_init(rcc_pll).and_then(move |(rcc, rcc_pll)| {
     thrd.led.enable_batch(|r| {
       thrd.led.enable(r);
       thrd.button.enable(r);
@@ -76,59 +67,13 @@ pub fn origin(origin: OriginToken) {
       .exec(button_future(exti13, thrd.sys_tick.into()));
     // Setup LED blink routine.
     thrd.led.exec(led_future(sys_tick, gpiob14, gpiob7, gpioc7));
-    Ok::<(), !>(())
+    Ok((rcc, rcc_pll))
   });
 
-  init.wait().ok();
+  setup.wait().ok();
 
   // Do not return to the reset handler from interrupts.
   regs.scb_scr.modify(|r| r.set_sleeponexit());
-}
-
-#[cfg_attr(feature = "clippy", allow(too_many_arguments))]
-fn hclk_init(
-  nmi: thread::Nmi<Ltt>,
-  rcc: thread::Rcc<Ctt>,
-  mut flash_acr: reg::flash::Acr<Urt>,
-  pwr_cr1: &mut reg::pwr::Cr1<Urt>,
-  rcc_apb1enr1: &mut reg::rcc::Apb1Enr1<Urt>,
-  rcc_bdcr: &mut reg::rcc::Bdcr<Urt>,
-  mut rcc_cfgr: reg::rcc::Cfgr<Urt>,
-  mut rcc_cicr: reg::rcc::Cicr<Frt>,
-  rcc_cier: &mut reg::rcc::Cier<Urt>,
-  mut rcc_cifr: reg::rcc::Cifr<Frt>,
-  rcc_cr: &mut reg::rcc::Cr<Urt>,
-  rcc_pllcfgr: &mut reg::rcc::Pllcfgr<Urt>,
-) -> impl Future<Item = (), Error = !> {
-  // Enable on-board LSE crystal.
-  rcc_apb1enr1.modify(|r| r.set_pwren());
-  pwr_cr1.modify(|r| r.set_dbp());
-  rcc_bdcr.modify(|r| r.set_lseon().clear_lsebyp().write_rtcsel(0b01));
-  while !rcc_bdcr.load().lserdy() {}
-  lse_css_failure(nmi, rcc_cicr.fork(), rcc_cifr.fork(), || {
-    panic!("LSE clock failure")
-  });
-  rcc_cier.modify(|r| r.set_lsecssie());
-  rcc_bdcr.modify(|r| r.set_lsecsson());
-
-  // Configure MSI to use hardware auto calibration with LSE.
-  rcc_cr.modify(|r| r.set_msipllen().set_msirgsel().write_msirange(0b0111));
-
-  // Configure PLL to use MSI on 80MHz.
-  rcc_pllcfgr.modify(|r| {
-    r.write_pllsrc(0b01)
-      .set_pllren()
-      .write_pllr((PLLCLK_FACTOR >> 1) - 1)
-      .write_pllm(PLL_INPUT_FACTOR - 1)
-      .write_plln(PLL_OUTPUT_FACTOR)
-  });
-
-  pll_on(rcc, rcc_cicr, rcc_cier, rcc_cifr, rcc_cr).and_then(move |()| {
-    // Setup flash to use at maximum performance.
-    flash_acr.modify(|r| r.set_prften().set_icen().set_dcen().write_latency(2));
-    rcc_cfgr.modify(|r| r.write_sw(0b11));
-    Ok(())
-  })
 }
 
 #[cfg_attr(feature = "clippy", allow(too_many_arguments))]
@@ -244,41 +189,4 @@ fn button_future(
     });
     Ok(())
   })
-}
-
-fn lse_css_failure<F>(
-  nmi: thread::Nmi<Ltt>,
-  rcc_cicr: reg::rcc::Cicr<Frt>,
-  rcc_cifr: reg::rcc::Cifr<Frt>,
-  f: F,
-) where
-  F: FnOnce() + Send + 'static,
-{
-  nmi.routine(move || loop {
-    if rcc_cifr.load().lsecssf() {
-      rcc_cicr.reset(|r| r.set_lsecssc());
-      break f();
-    }
-    yield;
-  });
-}
-
-fn pll_on(
-  rcc: thread::Rcc<Ctt>,
-  rcc_cicr: reg::rcc::Cicr<Frt>,
-  rcc_cier: &mut reg::rcc::Cier<Urt>,
-  rcc_cifr: reg::rcc::Cifr<Frt>,
-  rcc_cr: &mut reg::rcc::Cr<Urt>,
-) -> impl Future<Item = (), Error = !> {
-  rcc.enable_irq();
-  rcc_cier.modify(|r| r.set_pllrdyie());
-  let ready = rcc.future(move || loop {
-    if rcc_cifr.load().pllrdyf() {
-      rcc_cicr.reset(|r| r.set_pllrdyc());
-      break Ok(());
-    }
-    yield;
-  });
-  rcc_cr.modify(|r| r.set_pllon());
-  ready
 }
