@@ -13,7 +13,7 @@
 //! Flash the board with the following command:
 //!
 //! ```sh
-//! $ cargo drone flash --release
+//! $ RUSTC_WRAPPER=./rustc-wrapper.sh cargo drone flash --release
 //! ```
 //!
 //! Listen to the ITM stream for connected device with the following command:
@@ -30,7 +30,6 @@
 #![feature(allocator_api)]
 #![feature(allocator_internals)]
 #![feature(compiler_builtins_lib)]
-#![feature(conservative_impl_trait)]
 #![feature(const_atomic_bool_new)]
 #![feature(const_atomic_u32_new)]
 #![feature(const_cell_new)]
@@ -43,37 +42,40 @@
 #![feature(never_type)]
 #![feature(prelude_import)]
 #![feature(proc_macro)]
+#![feature(proc_macro_gen)]
 #![feature(slice_get_slice)]
 #![default_lib_allocator]
 #![no_std]
 #![warn(missing_docs)]
-#![cfg_attr(feature = "clippy", feature(plugin))]
-#![cfg_attr(feature = "clippy", plugin(clippy))]
-#![cfg_attr(feature = "clippy", allow(precedence, inline_always))]
-#![cfg_attr(feature = "clippy", allow(diverging_sub_expression))]
+#![cfg_attr(feature = "cargo-clippy", allow(precedence, inline_always))]
+#![cfg_attr(feature = "cargo-clippy", allow(diverging_sub_expression))]
 
 extern crate alloc;
-extern crate compiler_builtins;
+extern crate rlibc;
 #[macro_use]
 extern crate drone_core;
 #[macro_use]
-extern crate drone_cortex_m;
+extern crate drone_stm32 as drone_plat;
 extern crate futures;
 #[cfg(test)]
 #[macro_use]
 extern crate test;
 
 #[macro_use]
-pub mod peripherals;
+pub mod drv;
 
 pub mod consts;
 pub mod heap;
-pub mod origin;
-pub mod thread;
+pub mod sv;
+pub mod thr;
+pub mod trunk;
 
-pub use heap::ALLOC;
-pub use origin::origin;
+pub use trunk::trunk;
 
 #[prelude_import]
 #[allow(unused_imports)]
-use drone_cortex_m::prelude::*;
+use drone_plat::prelude::*;
+
+/// The global allocator.
+#[global_allocator]
+pub static mut HEAP: heap::Heap = heap::Heap::new();

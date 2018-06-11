@@ -7,10 +7,10 @@ MEMORY
 
 SECTIONS
 {
-  .vector_table ORIGIN(FLASH) :
+  .vtable ORIGIN(FLASH) :
   {
     LONG(ORIGIN(SRAM2) + LENGTH(SRAM2));
-    KEEP(*(.rodata.VECTOR_TABLE));
+    KEEP(*(.rodata.VTABLE));
   } > FLASH
 
   .text :

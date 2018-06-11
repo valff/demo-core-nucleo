@@ -11,24 +11,23 @@ repository = "https://github.com/drone-os/demo-core-nucleo"
 version = "0.8"
 path = "../drone-core"
 
-[dependencies.drone-cortex-m]
+[dependencies.drone-stm32]
 version = "0.8"
 features = ["stm32l4x6"]
-path = "../drone-cortex-m"
+path = "../drone-stm32"
 
 [dependencies.futures]
-version = "0.1"
+version = "0.2"
 default-features = false
 
-[dependencies.clippy]
-version = "*"
-optional = true
+[dependencies.rlibc]
+version = "1"
 
 [dev-dependencies.test]
 version = "0.2"
 features = []
-# git = "https://github.com/drone-os/drone-test"
-path = "../drone-test"
+git = "https://github.com/drone-os/drone-test"
+# path = "../drone-test"
 
 [[bin]]
 name = "demo-core-nucleo"
@@ -38,6 +37,7 @@ doc = false
 
 [profile.dev]
 panic = "abort"
+incremental = false
 
 [profile.release]
 opt-level = 3
@@ -45,12 +45,8 @@ lto = true
 panic = "abort"
 
 [profile.test]
-panic = "abort"
+incremental = false
 
 [profile.bench]
 opt-level = 3
 lto = true
-panic = "abort"
-
-[profile.doc]
-panic = "abort"

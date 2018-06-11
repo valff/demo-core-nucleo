@@ -5,41 +5,41 @@ mod css;
 #[macro_use]
 mod pll;
 
-pub use self::css::{Css, CssTokens};
-pub use self::pll::{Pll, PllTokens};
+pub use self::css::{Css, CssRes};
+pub use self::pll::{Pll, PllRes};
 
-use drone_core::peripheral::{PeripheralDevice, PeripheralTokens};
-use drone_cortex_m::reg;
-use drone_cortex_m::reg::prelude::*;
+use drone_plat::reg;
+use drone_plat::reg::prelude::*;
+use futures::prelude::*;
 
 /// Creates a new `Rcc`.
 #[macro_export]
-macro_rules! peripheral_rcc {
-  ($regs:ident, $thrd:ident) => {
-    $crate::peripherals::rcc::Rcc::from_tokens(
-      $crate::peripherals::rcc::RccTokens {
-        flash_acr: $regs.flash_acr.into(),
-        pwr_cr1: $regs.pwr_cr1.into(),
-        rcc_apb1enr1: $regs.rcc_apb1enr1.into(),
-        rcc_bdcr_lsebyp: $regs.rcc_bdcr.lsebyp,
-        rcc_bdcr_lseon: $regs.rcc_bdcr.lseon,
-        rcc_bdcr_lserdy: $regs.rcc_bdcr.lserdy,
-        rcc_bdcr_rtcsel: $regs.rcc_bdcr.rtcsel,
-        rcc_cfgr: $regs.rcc_cfgr.into(),
-        rcc_cr_msipllen: $regs.rcc_cr.msipllen,
-        rcc_cr_msirange: $regs.rcc_cr.msirange,
-        rcc_cr_msirgsel: $regs.rcc_cr.msirgsel,
-      }
-    )
-  }
+macro_rules! drv_rcc {
+  ($reg:ident) => {
+    $crate::drv::rcc::Rcc::new($crate::drv::rcc::RccRes {
+      flash_acr: $reg.flash_acr.into(),
+      pwr_cr1: $reg.pwr_cr1.into(),
+      rcc_apb1enr1: $reg.rcc_apb1enr1.into(),
+      rcc_bdcr_lsebyp: $reg.rcc_bdcr.lsebyp,
+      rcc_bdcr_lseon: $reg.rcc_bdcr.lseon,
+      rcc_bdcr_lserdy: $reg.rcc_bdcr.lserdy,
+      rcc_bdcr_rtcsel: $reg.rcc_bdcr.rtcsel,
+      rcc_cfgr: $reg.rcc_cfgr.into(),
+      rcc_cr_msipllen: $reg.rcc_cr.msipllen,
+      rcc_cr_msirange: $reg.rcc_cr.msirange,
+      rcc_cr_msirgsel: $reg.rcc_cr.msirgsel,
+    })
+  };
 }
 
-/// Reset and clock control.
-pub struct Rcc(RccTokens);
+/// Reset and clock control driver.
+#[derive(Driver)]
+pub struct Rcc(RccRes);
 
-/// Reset and clock control tokens.
+/// Reset and clock control resource.
 #[allow(missing_docs)]
-pub struct RccTokens {
+#[derive(Resource)]
+pub struct RccRes {
   pub flash_acr: reg::flash::Acr<Urt>,
   pub pwr_cr1: reg::pwr::Cr1<Urt>,
   pub rcc_apb1enr1: reg::rcc::Apb1Enr1<Urt>,
@@ -51,25 +51,6 @@ pub struct RccTokens {
   pub rcc_cr_msipllen: reg::rcc::cr::Msipllen<Srt>,
   pub rcc_cr_msirange: reg::rcc::cr::Msirange<Srt>,
   pub rcc_cr_msirgsel: reg::rcc::cr::Msirgsel<Srt>,
-}
-
-impl PeripheralTokens for RccTokens {
-  // FIXME https://github.com/rust-lang/rust/issues/47385
-  type InputTokens = Self;
-}
-
-impl PeripheralDevice for Rcc {
-  type Tokens = RccTokens;
-
-  #[inline(always)]
-  fn from_tokens(tokens: RccTokens) -> Self {
-    Rcc(tokens)
-  }
-
-  #[inline(always)]
-  fn into_tokens(self) -> RccTokens {
-    self.0
-  }
 }
 
 impl Rcc {
