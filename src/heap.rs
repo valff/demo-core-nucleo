@@ -1,14 +1,12 @@
 //! Heap allocation.
-#![cfg_attr(feature = "clippy", allow(zero_ptr, unnecessary_mut_passed))]
+
+#![cfg_attr(feature = "cargo-clippy", allow(zero_ptr, unnecessary_mut_passed))]
 
 use drone_core::heap;
 
 heap! {
   /// The allocator struct.
-  Heap;
-  /// The global allocator.
-  #[global_allocator]
-  ALLOC;
+  pub struct Heap;
 
   size = 0x40000;
   pools = [
