@@ -55,19 +55,20 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 name = "demo-core-nucleo"
 version = "0.1.0"
 dependencies = [
- "drone-core 0.8.3",
- "drone-stm32 0.8.3",
+ "drone-core 0.8.3 (registry+https://github.com/rust-lang/crates.io-index)",
+ "drone-stm32 0.8.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "futures-preview 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "rlibc 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "test 0.2.3",
+ "test 0.2.3 (git+https://github.com/drone-os/drone-test)",
 ]
 
 [[package]]
 name = "drone-core"
 version = "0.8.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
- "drone-core-macros 0.8.3",
- "drone-ctypes 0.8.3",
+ "drone-core-macros 0.8.3 (registry+https://github.com/rust-lang/crates.io-index)",
+ "drone-ctypes 0.8.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "failure 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "failure_derive 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "futures-preview 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -76,9 +77,10 @@ dependencies = [
 [[package]]
 name = "drone-core-macros"
 version = "0.8.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "Inflector 0.11.3 (registry+https://github.com/rust-lang/crates.io-index)",
- "drone-macros-core 0.8.3",
+ "drone-macros-core 0.8.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "if_chain 0.1.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "proc-macro2 0.4.13 (registry+https://github.com/rust-lang/crates.io-index)",
  "quote 0.6.8 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -88,10 +90,12 @@ dependencies = [
 [[package]]
 name = "drone-ctypes"
 version = "0.8.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "drone-macros-core"
 version = "0.8.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "lazy_static 1.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "proc-macro2 0.4.13 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -110,11 +114,12 @@ dependencies = [
 [[package]]
 name = "drone-stm32"
 version = "0.8.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
- "drone-core 0.8.3",
+ "drone-core 0.8.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "drone-mirror-failure 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "drone-stm32-macros 0.8.3",
- "drone-stm32-svd 0.8.3",
+ "drone-stm32-macros 0.8.3 (registry+https://github.com/rust-lang/crates.io-index)",
+ "drone-stm32-svd 0.8.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "failure 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "failure_derive 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "futures-preview 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -123,9 +128,10 @@ dependencies = [
 [[package]]
 name = "drone-stm32-macros"
 version = "0.8.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "Inflector 0.11.3 (registry+https://github.com/rust-lang/crates.io-index)",
- "drone-macros-core 0.8.3",
+ "drone-macros-core 0.8.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "proc-macro2 0.4.13 (registry+https://github.com/rust-lang/crates.io-index)",
  "quote 0.6.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "syn 0.14.9 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -134,6 +140,7 @@ dependencies = [
 [[package]]
 name = "drone-stm32-svd"
 version = "0.8.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "drone-mirror-failure 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde 1.0.75 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -409,6 +416,7 @@ dependencies = [
 [[package]]
 name = "test"
 version = "0.2.3"
+source = "git+https://github.com/drone-os/drone-test#017ea82bbb0943abfde40a0bb0fee7651cc43e9a"
 dependencies = [
  "sc 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
@@ -481,7 +489,14 @@ dependencies = [
 "checksum bitflags 0.7.0 (registry+https://github.com/rust-lang/crates.io-index)" = "aad18937a628ec6abcd26d1489012cc0e18c21798210f491af69ded9b881106d"
 "checksum cc 1.0.22 (registry+https://github.com/rust-lang/crates.io-index)" = "4a6007c146fdd28d4512a794b07ffe9d8e89e6bf86e2e0c4ddff2e1fb54a0007"
 "checksum cfg-if 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)" = "0c4e7bb64a8ebb0d856483e1e682ea3422f883c5f5615a90d51a2c82fe87fdd3"
+"checksum drone-core 0.8.3 (registry+https://github.com/rust-lang/crates.io-index)" = "2b4212a329475a531beb51c5bd344717d7c804884172616e7902485e2b654bfe"
+"checksum drone-core-macros 0.8.3 (registry+https://github.com/rust-lang/crates.io-index)" = "bc8794dd4f751586b54488adc396a8bfd61729a9f5aa5a6cb8817d60e64f12ce"
+"checksum drone-ctypes 0.8.3 (registry+https://github.com/rust-lang/crates.io-index)" = "8f1aa39da61b7c760472695ec0177c4a6ea0448d7c105b38eb39362e46cbab5b"
+"checksum drone-macros-core 0.8.3 (registry+https://github.com/rust-lang/crates.io-index)" = "e4cf9a1c3affa455fbc7f812a0d3c26a2809bd95cc4f99c297b72994a8e9280f"
 "checksum drone-mirror-failure 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)" = "7db0c6ca8cb9dd994095644b966bcb205969fa51695e9832fd781f52388a63f8"
+"checksum drone-stm32 0.8.3 (registry+https://github.com/rust-lang/crates.io-index)" = "54969a55cf7028285a85f5821adea606c77f28e3a35110283692b2b075fcac76"
+"checksum drone-stm32-macros 0.8.3 (registry+https://github.com/rust-lang/crates.io-index)" = "2b0c75f2147ec8a552cbb5e02b9423dbfedd7c0ec517c34dd001873005759112"
+"checksum drone-stm32-svd 0.8.3 (registry+https://github.com/rust-lang/crates.io-index)" = "490daacabcffa8dccbed877b8119ae80b4855d9141bffbd60a58ecd98a001a2e"
 "checksum either 1.5.0 (registry+https://github.com/rust-lang/crates.io-index)" = "3be565ca5c557d7f59e7cfcf1844f9e3033650c929c6566f511e8005f205c1d0"
 "checksum failure 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)" = "934799b6c1de475a012a02dab0ace1ace43789ee4b99bcfbf1a2e3e8ced5de82"
 "checksum failure_derive 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)" = "c7cdda555bb90c9bb67a3b670a0f42de8e73f5981524123ad8578aafec8ddb8b"
@@ -515,6 +530,7 @@ dependencies = [
 "checksum syn 0.14.9 (registry+https://github.com/rust-lang/crates.io-index)" = "261ae9ecaa397c42b960649561949d69311f08eeaea86a65696e6e46517cf741"
 "checksum synom 0.11.3 (registry+https://github.com/rust-lang/crates.io-index)" = "a393066ed9010ebaed60b9eafa373d4b1baac186dd7e008555b0f702b51945b6"
 "checksum synstructure 0.6.1 (registry+https://github.com/rust-lang/crates.io-index)" = "3a761d12e6d8dcb4dcf952a7a89b475e3a9d69e4a69307e01a470977642914bd"
+"checksum test 0.2.3 (git+https://github.com/drone-os/drone-test)" = "<none>"
 "checksum thread_local 0.3.6 (registry+https://github.com/rust-lang/crates.io-index)" = "c6b53e329000edc2b34dbe8545fd20e55a333362d0a321909685a19bd28c3f1b"
 "checksum ucd-util 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)" = "fd2be2d6639d0f8fe6cdda291ad456e23629558d466e2789d2c3e9892bda285d"
 "checksum unicode-xid 0.0.4 (registry+https://github.com/rust-lang/crates.io-index)" = "8c1f860d7d29cf02cb2f3f359fd35991af3d30bac52c57d265a3c461074cb4dc"
