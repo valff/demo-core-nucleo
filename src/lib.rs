@@ -22,6 +22,27 @@
 //! $ cargo drone server --itm
 //! ```
 //!
+//! # Development
+//!
+//! Check:
+//!
+//! ```sh
+//! $ RUSTC_WRAPPER=./clippy-wrapper.sh xargo check \
+//!   --target "thumbv7em-none-eabihf"
+//! ```
+//!
+//! Test:
+//!
+//! ```sh
+//! $ RUSTC_WRAPPER=./rustc-wrapper.sh cargo drone test
+//! ```
+//!
+//! Readme update:
+//!
+//! ```sh
+//! $ cargo readme -o README.md
+//! ```
+//!
 //! [Drone]: https://github.com/drone-os/drone
 //! [NUCLEO-L496ZG-P]:
 //! http://www.st.com/en/evaluation-tools/nucleo-l496zg-p.html
@@ -30,20 +51,13 @@
 #![feature(allocator_api)]
 #![feature(allocator_internals)]
 #![feature(compiler_builtins_lib)]
-#![feature(const_atomic_bool_new)]
-#![feature(const_atomic_u32_new)]
-#![feature(const_cell_new)]
 #![feature(const_fn)]
-#![feature(const_ptr_null_mut)]
 #![feature(generators)]
-#![feature(global_allocator)]
 #![feature(integer_atomics)]
 #![feature(naked_functions)]
 #![feature(never_type)]
 #![feature(prelude_import)]
-#![feature(proc_macro)]
 #![feature(proc_macro_gen)]
-#![feature(slice_get_slice)]
 #![default_lib_allocator]
 #![no_std]
 #![warn(missing_docs)]
