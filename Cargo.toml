@@ -9,14 +9,14 @@ repository = "https://github.com/drone-os/demo-core-nucleo"
 
 [dependencies.drone-core]
 version = "0.8"
-path = "../drone-core"
+# path = "../drone-core"
 
 [dependencies.drone-stm32]
 version = "0.8"
 features = ["stm32l4x6"]
-path = "../drone-stm32"
+# path = "../drone-stm32"
 
-[dependencies.futures]
+[dependencies.futures-preview]
 version = "0.2"
 default-features = false
 
