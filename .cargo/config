@@ -1,11 +1,4 @@
 [target.thumbv7em-none-eabihf]
 rustflags = [
   "-C", "link-arg=-Tlayout.ld",
-  "-C", "link-arg=-Wl,--build-id=none",
-  "-C", "link-arg=-nostartfiles",
-]
-
-[target.thumbv7em-linux-eabihf]
-rustflags = [
-  "-C", "link-arg=-nostartfiles",
 ]

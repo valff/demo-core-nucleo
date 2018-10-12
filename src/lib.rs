@@ -57,12 +57,12 @@
 #![feature(naked_functions)]
 #![feature(never_type)]
 #![feature(prelude_import)]
-#![feature(proc_macro_gen)]
+#![feature(tool_lints)]
 #![default_lib_allocator]
 #![no_std]
 #![warn(missing_docs)]
-#![cfg_attr(feature = "cargo-clippy", allow(precedence, inline_always))]
-#![cfg_attr(feature = "cargo-clippy", allow(diverging_sub_expression))]
+#![allow(clippy::precedence, clippy::inline_always)]
+#![allow(clippy::diverging_sub_expression)]
 
 extern crate alloc;
 extern crate rlibc;

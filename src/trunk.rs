@@ -20,7 +20,6 @@ static DEBOUNCE: AtomicU32 = AtomicU32::new(0);
 /// The entry point.
 pub fn trunk(reg: RegIdx) {
   let thr: ThrIdx = drv_thr!(reg).init(|scb_ccr| scb_ccr.set_div_0_trp());
-  let itm = drv_itm!(reg);
   let rcc = drv_rcc!(reg);
   let rcc_pll = drv_rcc_pll!(reg, thr);
   let mut rcc_css = drv_rcc_css!(reg, thr);
@@ -36,8 +35,6 @@ pub fn trunk(reg: RegIdx) {
     rcc_apb2enr,
     ..
   } = reg;
-
-  itm.init();
 
   // Panic on Hard Fault.
   fib::add_fn(thr.hard_fault, || panic!("Hard Fault"));
@@ -77,7 +74,7 @@ pub fn trunk(reg: RegIdx) {
   reg.scb_scr.modify(|r| r.set_sleeponexit());
 }
 
-#[cfg_attr(feature = "clippy", allow(too_many_arguments))]
+#[allow(clippy::too_many_arguments)]
 fn peripheral_init(
   gpio_b14: &GpioB14<Srt>,
   gpio_b7: &GpioB7<Srt>,

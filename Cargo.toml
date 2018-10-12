@@ -8,13 +8,13 @@ license = "MIT/Apache-2.0"
 repository = "https://github.com/drone-os/demo-core-nucleo"
 
 [dependencies.drone-core]
-version = "0.8"
-# path = "../drone-core"
+version = "0.9"
+path = "../drone-core"
 
 [dependencies.drone-stm32]
-version = "0.8"
+version = "0.9"
 features = ["stm32l4x6"]
-# path = "../drone-stm32"
+path = "../drone-stm32"
 
 [dependencies.futures-preview]
 version = "0.2"
@@ -26,8 +26,8 @@ version = "1"
 [dev-dependencies.test]
 version = "0.2"
 features = []
-git = "https://github.com/drone-os/drone-test"
-# path = "../drone-test"
+# git = "https://github.com/drone-os/drone-test"
+path = "../drone-test"
 
 [[bin]]
 name = "demo-core-nucleo"
@@ -37,15 +37,11 @@ doc = false
 
 [profile.dev]
 panic = "abort"
-incremental = false
 
 [profile.release]
 opt-level = 3
 lto = true
 panic = "abort"
-
-[profile.test]
-incremental = false
 
 [profile.bench]
 opt-level = 3
