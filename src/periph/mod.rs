@@ -1,4 +1,4 @@
-//! Peripheral devices.
+//! Peripherals.
 
 #[macro_use]
 pub mod flash;

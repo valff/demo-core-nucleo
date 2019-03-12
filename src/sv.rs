@@ -1,6 +1,6 @@
 //! Supervisor.
 
-use drone_plat::sv;
+use drone_cortex_m::sv;
 
 sv! {
   /// The supervisor.
