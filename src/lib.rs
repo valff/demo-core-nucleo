@@ -46,11 +46,11 @@
 #![warn(missing_docs)]
 #![warn(clippy::pedantic)]
 #![allow(
-  clippy::cast_possible_truncation,
-  clippy::doc_markdown,
-  clippy::enum_glob_use,
-  clippy::precedence,
-  clippy::similar_names
+    clippy::cast_possible_truncation,
+    clippy::doc_markdown,
+    clippy::enum_glob_use,
+    clippy::precedence,
+    clippy::similar_names
 )]
 
 #[macro_use]

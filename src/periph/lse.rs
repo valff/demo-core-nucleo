@@ -4,19 +4,19 @@ use crate::reg;
 use drone_core::periph;
 
 periph::one! {
-  /// Acquires LSE.
-  pub macro periph_lse;
+    /// Acquires LSE.
+    pub macro periph_lse;
 
-  /// LSE.
-  pub struct LsePeriph;
+    /// LSE.
+    pub struct LsePeriph;
 
-  reg; periph::lse;
+    reg; periph::lse;
 
-  RCC {
-    BDCR {
-      LSEBYP;
-      LSEON;
-      LSERDY;
+    RCC {
+        BDCR {
+            LSEBYP;
+            LSEON;
+            LSERDY;
+        }
     }
-  }
 }

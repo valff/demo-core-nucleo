@@ -13,8 +13,7 @@ pub const PLL_OUTPUT_FACTOR: usize = 20;
 pub const PLLCLK_FACTOR: usize = 2;
 
 /// Processor clock frequency.
-pub const HCLK: usize =
-  MSI_CLK / PLL_INPUT_FACTOR * PLL_OUTPUT_FACTOR / PLLCLK_FACTOR;
+pub const HCLK: usize = MSI_CLK / PLL_INPUT_FACTOR * PLL_OUTPUT_FACTOR / PLLCLK_FACTOR;
 
 /// SysTick clocks in one second.
 pub const SYS_TICK_SEC: usize = HCLK / 8;

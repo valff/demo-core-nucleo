@@ -4,19 +4,19 @@ use crate::reg;
 use drone_core::periph;
 
 periph::one! {
-  /// Acquires MSI.
-  pub macro periph_msi;
+    /// Acquires MSI.
+    pub macro periph_msi;
 
-  /// MSI.
-  pub struct MsiPeriph;
+    /// MSI.
+    pub struct MsiPeriph;
 
-  reg; periph::msi;
+    reg; periph::msi;
 
-  RCC {
-    CR {
-      MSIPLLEN;
-      MSIRANGE;
-      MSIRGSEL;
+    RCC {
+        CR {
+            MSIPLLEN;
+            MSIRANGE;
+            MSIRGSEL;
+        }
     }
-  }
 }
