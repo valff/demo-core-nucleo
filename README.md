@@ -15,34 +15,13 @@ Example blinking program for [NUCLEO-L496ZG-P] board based on [Drone].
 Flash the board with the following command:
 
 ```sh
-$ RUSTC_WRAPPER=./rustc-wrapper.sh cargo drone flash --release
+$ just flash
 ```
 
 Listen to the ITM stream for connected device with the following command:
 
 ```sh
-$ cargo drone server --itm
-```
-
-## Development
-
-Check:
-
-```sh
-$ RUSTC_WRAPPER=./clippy-wrapper.sh xargo check \
-  --target "thumbv7em-none-eabihf"
-```
-
-Test:
-
-```sh
-$ RUSTC_WRAPPER=./rustc-wrapper.sh cargo drone test
-```
-
-Readme update:
-
-```sh
-$ cargo readme -o README.md
+$ just swo
 ```
 
 [Drone]: https://github.com/drone-os/drone
@@ -53,14 +32,14 @@ http://www.st.com/en/evaluation-tools/nucleo-l496zg-p.html
 
 Licensed under either of
 
- * Apache License, Version 2.0, ([LICENSE-APACHE](LICENSE-APACHE) or
-   http://www.apache.org/licenses/LICENSE-2.0)
- * MIT license ([LICENSE-MIT](LICENSE-MIT) or
-   http://opensource.org/licenses/MIT)
+ * Apache License, Version 2.0
+   ([LICENSE-APACHE](LICENSE-APACHE) or http://www.apache.org/licenses/LICENSE-2.0)
+ * MIT license
+   ([LICENSE-MIT](LICENSE-MIT) or http://opensource.org/licenses/MIT)
 
 at your option.
 
-### Contribution
+## Contribution
 
 Unless you explicitly state otherwise, any contribution intentionally submitted
 for inclusion in the work by you, as defined in the Apache-2.0 license, shall be

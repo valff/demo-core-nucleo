@@ -2,32 +2,40 @@
 name = "demo-core-nucleo"
 version = "0.1.0"
 authors = ["Valentine Valyaeff <valentine.valyaeff@gmail.com>"]
+edition = "2018"
 description = "Example program for STM32 Nucleo using Drone RTOS."
 readme = "README.md"
-license = "MIT/Apache-2.0"
+license = "MIT OR Apache-2.0"
 repository = "https://github.com/drone-os/demo-core-nucleo"
 
 [dependencies.drone-core]
-version = "0.8"
-# path = "../drone-core"
+version = "0.9"
+git = "https://github.com/drone-os/drone-core"
+# path = "../../drone-os/drone-core"
 
-[dependencies.drone-stm32]
-version = "0.8"
+[dependencies.drone-cortex-m]
+version = "0.9"
+git = "https://github.com/drone-os/drone-cortex-m"
+# path = "../../drone-os/drone-cortex-m"
+
+[dependencies.drone-stm32-map]
+version = "0.9"
 features = ["stm32l4x6"]
-# path = "../drone-stm32"
+git = "https://github.com/drone-os/drone-stm32-map"
+# path = "../../drone-os/drone-stm32-map"
 
-[dependencies.futures-preview]
-version = "0.2"
-default-features = false
+[dependencies.drone-stm32-drv]
+version = "0.9"
+features = ["stm32l4x6"]
+git = "https://github.com/drone-os/drone-stm32-drv"
+# path = "../../drone-os/drone-stm32-drv"
 
-[dependencies.rlibc]
-version = "1"
+[dependencies]
+futures-preview = { version = "0.3.0-alpha", default-features = false }
 
 [dev-dependencies.test]
 version = "0.2"
-features = []
 git = "https://github.com/drone-os/drone-test"
-# path = "../drone-test"
 
 [[bin]]
 name = "demo-core-nucleo"
@@ -37,15 +45,12 @@ doc = false
 
 [profile.dev]
 panic = "abort"
-incremental = false
 
 [profile.release]
 opt-level = 3
 lto = true
-panic = "abort"
-
-[profile.test]
 incremental = false
+panic = "abort"
 
 [profile.bench]
 opt-level = 3
