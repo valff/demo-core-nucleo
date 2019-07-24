@@ -13,25 +13,23 @@
 //! Flash the board with the following command:
 //!
 //! ```sh
-//! $ scripts/flash.sh
+//! $ just flash
 //! ```
 //!
 //! Listen to the ITM stream for connected device with the following command:
 //!
 //! ```sh
-//! $ scripts/swo.sh
+//! $ just swo
 //! ```
 //!
 //! [Drone]: https://github.com/drone-os/drone
 //! [NUCLEO-L496ZG-P]:
 //! http://www.st.com/en/evaluation-tools/nucleo-l496zg-p.html
 
-#![feature(alloc)]
 #![feature(allocator_api)]
 #![feature(allocator_internals)]
 #![feature(compiler_builtins_lib)]
 #![feature(const_fn)]
-#![feature(futures_api)]
 #![feature(generators)]
 #![feature(integer_atomics)]
 #![feature(naked_functions)]

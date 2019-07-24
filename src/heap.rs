@@ -6,8 +6,10 @@ heap! {
     /// The allocator struct.
     pub struct Heap;
 
-    // extern fn ::drone_cortex_m::itm::instrument_alloc;
-    // extern fn ::drone_cortex_m::itm::instrument_dealloc;
+    // extern fn ::drone_cortex_m::itm::trace_alloc;
+    // extern fn ::drone_cortex_m::itm::trace_dealloc;
+    // extern fn ::drone_cortex_m::itm::trace_grow_in_place;
+    // extern fn ::drone_cortex_m::itm::trace_shrink_in_place;
 
     size = 0x40000;
     pools = [
